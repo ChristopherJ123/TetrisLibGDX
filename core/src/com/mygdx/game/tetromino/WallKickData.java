@@ -3,17 +3,24 @@ package com.mygdx.game.tetromino;
 import java.util.ArrayList;
 
 public class WallKickData {
-    private ArrayList<Integer[]> ZeroToR;
-    private ArrayList<Integer[]> RToZero;
-    private ArrayList<Integer[]> RToTwo;
-    private ArrayList<Integer[]> TwoToR;
-    private ArrayList<Integer[]> TwoToL;
-    private ArrayList<Integer[]> LToTwo;
-    private ArrayList<Integer[]> LToZero;
-    private ArrayList<Integer[]> ZeroToL;
+    private final ArrayList<Integer[]> ZeroToR;
+    private final ArrayList<Integer[]> RToZero;
+    private final ArrayList<Integer[]> RToTwo;
+    private final ArrayList<Integer[]> TwoToR;
+    private final ArrayList<Integer[]> TwoToL;
+    private final ArrayList<Integer[]> LToTwo;
+    private final ArrayList<Integer[]> LToZero;
+    private final ArrayList<Integer[]> ZeroToL;
 
     public WallKickData() {
-
+        ZeroToR = new ArrayList<>();
+        RToZero = new ArrayList<>();
+        RToTwo = new ArrayList<>();
+        TwoToR = new ArrayList<>();
+        TwoToL = new ArrayList<>();
+        LToTwo = new ArrayList<>();
+        LToZero = new ArrayList<>();
+        ZeroToL = new ArrayList<>();
     }
 
     public boolean addWallKickData(String type, int x, int y) {
