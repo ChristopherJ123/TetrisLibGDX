@@ -7,12 +7,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.mygdx.game.config.Config;
+import com.mygdx.game.gamestate.Board;
+import com.mygdx.game.gamestate.CurrentPiece;
+import com.mygdx.game.gamestate.Queue;
 
 public class GameScreen implements Screen {
     final TetrisGame tetrisGame;
 
     Texture tetrominoTextures;
-
     TextureRegion redBlock;
     TextureRegion orangeBlock;
     TextureRegion yellowBlock;
@@ -21,8 +24,11 @@ public class GameScreen implements Screen {
     TextureRegion blueBlock;
     TextureRegion magentaBlock;
     TextureRegion grayBlock;
-
     OrthographicCamera camera;
+
+    Queue queue;
+    Board board;
+    CurrentPiece currentPiece;
 
     public GameScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
@@ -34,19 +40,31 @@ public class GameScreen implements Screen {
         tetrominoTextures = new Texture(Gdx.files.internal("img/texture.png"));
 
         redBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        orangeBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        yellowBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        limeBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        tealBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        blueBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        magentaBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
-        grayBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
+        orangeBlock = new TextureRegion(tetrominoTextures, 192, 0, 192, 192);
+        yellowBlock = new TextureRegion(tetrominoTextures, 384, 0, 192, 192);
+        limeBlock = new TextureRegion(tetrominoTextures, 576, 0, 192, 192);
+        tealBlock = new TextureRegion(tetrominoTextures, 768, 0, 192, 192);
+        blueBlock = new TextureRegion(tetrominoTextures, 0, 192, 192, 192);
+        magentaBlock = new TextureRegion(tetrominoTextures, 192, 192, 192, 192);
+        grayBlock = new TextureRegion(tetrominoTextures, 384, 192, 192, 192);
 
         // Set cameras
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 400, 800);
 
-        // Rendering
+        // Application
+        board = new Board();
+        queue = new Queue();
+        System.out.println(queue.getQueue());
+        currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+        board.addCurrentPiece(currentPiece);
+
+        for (int i = 39; i >= 0; i--) {
+            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
+                System.out.print((board.getPlayfield()[i][j].isSolid()) ? "1 " : "0 ");
+            }
+            System.out.println();
+        }
     }
 
     @Override
@@ -61,7 +79,19 @@ public class GameScreen implements Screen {
 
         tetrisGame.batch.setProjectionMatrix(camera.combined);
         tetrisGame.batch.begin();
-        tetrisGame.batch.draw(redBlock, 100, 100, 40, 40);
+        for (int i = board.getPlayfield().length-1; i >= 0; i--) {
+            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
+                switch (board.getPlayfield()[i][j].getColor()) {
+                    case RED -> tetrisGame.batch.draw(redBlock, j * 40, i * 40, 40, 40);
+                    case ORANGE -> tetrisGame.batch.draw(orangeBlock, j * 40, i * 40, 40, 40);
+                    case YELLOW -> tetrisGame.batch.draw(yellowBlock, j * 40, i * 40, 40, 40);
+                    case LIME -> tetrisGame.batch.draw(limeBlock, j * 40, i * 40, 40, 40);
+                    case TEAL -> tetrisGame.batch.draw(tealBlock, j * 40, i * 40, 40, 40);
+                    case BLUE -> tetrisGame.batch.draw(blueBlock, j * 40, i * 40, 40, 40);
+                    case MAGENTA -> tetrisGame.batch.draw(magentaBlock, j * 40, i * 40, 40, 40);
+                }
+            }
+        }
         tetrisGame.batch.end();
     }
 
