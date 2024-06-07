@@ -6,27 +6,35 @@ public class Tetromino {
 
     private String name;
     private Color color;
-    private boolean[][] shape;
+    private Block[][] shape;
     private WallKickData wallKickData;
 
     public Tetromino(String name, Color color) {
         this.name = name;
         this.color = color;
-        this.shape = new boolean[][]{{true}};
+        this.shape = new Block[][]{{new Block()}};
         this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Color color, boolean[][] shape) {
+    public Tetromino(String name, Color color, Block[][] shape) {
         this.name = name;
         this.color = color;
         this.shape = shape;
+        this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Color color, boolean[][] shape, WallKickData wallKickData) {
+    public Tetromino(String name, Color color, Block[][] shape, WallKickData wallKickData) {
         this.name = name;
         this.color = color;
         this.shape = shape;
         this.wallKickData = wallKickData;
+    }
+
+    public Tetromino(Tetromino tetromino) {
+        this.name = tetromino.name;
+        this.color = tetromino.color;
+        this.shape = tetromino.shape;
+        this.wallKickData = tetromino.wallKickData;
     }
 
     public String getName() {
@@ -45,12 +53,18 @@ public class Tetromino {
         this.color = color;
     }
 
-    public boolean[][] getShape() {
+    public Block[][] getShape() {
         return shape;
     }
 
     public void setShape(boolean[][] shape) {
-        this.shape = shape;
+        Block[][] shapeBlocks = new Block[shape.length][shape[0].length];
+        for (int i = 0; i < shapeBlocks.length; i++) {
+            for (int j = 0; j < shapeBlocks[i].length; j++) {
+                shapeBlocks[i][j] = new Block(shape[i][j]);
+            }
+        }
+        this.shape = shapeBlocks;
     }
 
     public WallKickData getWallKickData() {

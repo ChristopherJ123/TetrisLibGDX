@@ -18,5 +18,6 @@ public class ZTetromino {
         tetromino.setShape(shape);
         wallKickData = new WallKickData();
         wallKickData.JLSTZWallKickData();
+        tetromino.setWallKickData(wallKickData);
     }
 }

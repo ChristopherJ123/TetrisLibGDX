@@ -59,5 +59,7 @@ public class ITetromino {
         wallKickData.addWallKickData("0->L", -1, 0);
         wallKickData.addWallKickData("0->L", -1, 2);
         wallKickData.addWallKickData("0->L", 2, -1);
+
+        tetromino.setWallKickData(wallKickData);
     }
 }
