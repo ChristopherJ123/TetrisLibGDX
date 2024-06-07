@@ -1,26 +1,36 @@
 package com.mygdx.game.tetromino;
 
-import com.badlogic.gdx.graphics.Color;
+import com.mygdx.game.config.Config;
 
 public class Block {
-    private Color color;
+    private Config.ColorEnum color;
     private boolean isSolid;
     private boolean isPlaced;
 
     public Block() {
-        color = Color.WHITE;
-        isSolid = false;
-        isPlaced = false;
-    }
-
-    public Block(boolean isSolid) {
-        this.isSolid = isSolid;
+        this.color = Config.ColorEnum.WHITE;
+        this.isSolid = false;
         this.isPlaced = false;
     }
 
-    public Block(boolean isSolid, boolean isPlaced) {
+    public Block(Config.ColorEnum color) {
+        this.color = color;
+        this.isSolid = false;
+        this.isPlaced = false;
+    }
+
+    public Block(Config.ColorEnum color, boolean isSolid, boolean isPlaced) {
+        this.color = color;
         this.isSolid = isSolid;
         this.isPlaced = isPlaced;
+    }
+
+    public Config.ColorEnum getColor() {
+        return color;
+    }
+
+    public void setColor(Config.ColorEnum color) {
+        this.color = color;
     }
 
     public boolean isSolid() {

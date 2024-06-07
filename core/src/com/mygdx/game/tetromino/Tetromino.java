@@ -1,29 +1,28 @@
 package com.mygdx.game.tetromino;
 
-import com.badlogic.gdx.graphics.Color;
+import com.mygdx.game.config.Config;
 
 public class Tetromino {
-
     private String name;
-    private Color color;
+    private Config.ColorEnum color;
     private Block[][] shape;
     private WallKickData wallKickData;
 
-    public Tetromino(String name, Color color) {
+    public Tetromino(String name, Config.ColorEnum color) {
         this.name = name;
         this.color = color;
         this.shape = new Block[][]{{new Block()}};
         this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Color color, Block[][] shape) {
+    public Tetromino(String name, Config.ColorEnum color, Block[][] shape) {
         this.name = name;
         this.color = color;
         this.shape = shape;
         this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Color color, Block[][] shape, WallKickData wallKickData) {
+    public Tetromino(String name, Config.ColorEnum color, Block[][] shape, WallKickData wallKickData) {
         this.name = name;
         this.color = color;
         this.shape = shape;
@@ -45,11 +44,11 @@ public class Tetromino {
         this.name = name;
     }
 
-    public Color getColor() {
+    public Config.ColorEnum getColor() {
         return color;
     }
 
-    public void setColor(Color color) {
+    public void setColor(Config.ColorEnum color) {
         this.color = color;
     }
 
@@ -57,11 +56,25 @@ public class Tetromino {
         return shape;
     }
 
-    public void setShape(boolean[][] shape) {
+    public void setShape(Block[][] shape) {
+        this.shape = shape;
+    }
+
+    public boolean[][] getShapeBoolean() {
+        boolean[][] shapeBoolean = new boolean[this.shape.length][this.shape[0].length];
+        for (int i = 0; i < shapeBoolean.length; i++) {
+            for (int j = 0; j < shapeBoolean[i].length; j++) {
+                shapeBoolean[i][j] = this.shape[i][j].isSolid();
+            }
+        }
+        return shapeBoolean;
+    }
+
+    public void setShapeBoolean(boolean[][] shape) {
         Block[][] shapeBlocks = new Block[shape.length][shape[0].length];
         for (int i = 0; i < shapeBlocks.length; i++) {
             for (int j = 0; j < shapeBlocks[i].length; j++) {
-                shapeBlocks[i][j] = new Block(shape[i][j]);
+                shapeBlocks[i][j] = (shape[i][j]) ? new Block(this.color, true, false) : new EmptyBlock();
             }
         }
         this.shape = shapeBlocks;

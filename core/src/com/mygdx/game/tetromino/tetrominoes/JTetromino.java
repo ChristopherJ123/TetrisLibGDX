@@ -1,6 +1,6 @@
 package com.mygdx.game.tetromino.tetrominoes;
 
-import com.badlogic.gdx.graphics.Color;
+import com.mygdx.game.config.Config;
 import com.mygdx.game.tetromino.Tetromino;
 import com.mygdx.game.tetromino.WallKickData;
 
@@ -14,10 +14,15 @@ public class JTetromino {
     WallKickData wallKickData;
 
     public JTetromino() {
-        tetromino = new Tetromino("JTetromino", Color.BLUE);
-        tetromino.setShape(shape);
+        tetromino = new Tetromino("JTetromino", Config.ColorEnum.BLUE);
+        tetromino.setShapeBoolean(shape);
         wallKickData = new WallKickData();
         wallKickData.JLSTZWallKickData();
         tetromino.setWallKickData(wallKickData);
+    }
+
+    public static Tetromino get() {
+        JTetromino jTetromino = new JTetromino();
+        return jTetromino.tetromino;
     }
 }
