@@ -46,6 +46,6 @@ public class Config {
             this.color = color;
         }
 
-        public Color getColorEnum() {return color;}
+        public Color getColor() {return color;}
     }
 }
