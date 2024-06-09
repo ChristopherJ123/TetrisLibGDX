@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.config.Config;
+import com.mygdx.game.controls.KeyInputProcessor;
 import com.mygdx.game.gamestate.Board;
 import com.mygdx.game.gamestate.CurrentPiece;
 import com.mygdx.game.gamestate.Queue;
@@ -34,6 +35,7 @@ public class GameScreen implements Screen {
     Queue queue;
     Board board;
     CurrentPiece currentPiece;
+    KeyInputProcessor keyInputProcessor;
 
     public GameScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
@@ -68,15 +70,29 @@ public class GameScreen implements Screen {
         // Application
         board = new Board();
         queue = new Queue();
-        System.out.println(queue.getQueue());
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
 
-        for (int i = 39; i >= 0; i--) {
-            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
-                System.out.print((board.getPlayfield()[i][j].isSolid()) ? "1 " : "0 ");
-            }
-            System.out.println();
-        }
+        // Initialize key actions
+        Runnable leftAction = () -> currentPiece.changeBy(-1, 0, board);
+        Runnable rightAction = () -> currentPiece.changeBy(1, 0, board);
+        Runnable downAction = () -> currentPiece.changeBy(0, -1, board);
+        Runnable spaceAction = () -> {
+            while (currentPiece.changeBy(0, -1, board));
+            board.placeCurrentPiece(currentPiece);
+            currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+        };
+
+        keyInputProcessor = new KeyInputProcessor(leftAction, rightAction, downAction, spaceAction);
+        Gdx.input.setInputProcessor(keyInputProcessor);
+
+
+//
+//        for (int i = 39; i >= 0; i--) {
+//            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
+//                System.out.print((board.getPlayfield()[i][j].isSolid()) ? "1 " : "0 ");
+//            }
+//            System.out.println();
+//        }
     }
 
     @Override
@@ -87,11 +103,13 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0.2f, 1);
+
+        keyInputProcessor.update(delta); // Listen keyboard inputs
+
         camera.update();
-
         tetrisGame.batch.setProjectionMatrix(camera.combined);
-        tetrisGame.batch.begin();
 
+        tetrisGame.batch.begin(); // Render Start
         // Render play field
         for (int i = board.getPlayfield().length-1; i >= 0; i--) {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
@@ -113,7 +131,7 @@ public class GameScreen implements Screen {
                 }
             }
         }
-        tetrisGame.batch.end();
+        tetrisGame.batch.end(); // Render end
     }
 
     @Override

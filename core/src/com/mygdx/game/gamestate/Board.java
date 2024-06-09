@@ -17,7 +17,7 @@ public class Board {
         }
     }
 
-    public void addCurrentPiece(CurrentPiece currentPiece) {
+    public void placeCurrentPiece(CurrentPiece currentPiece) {
         for (int i = 0; i < currentPiece.getTetromino().getShapeBoolean().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShapeBoolean()[i].length; j++) {
                 if (currentPiece.getTetromino().getShapeBoolean()[i][j]) {
