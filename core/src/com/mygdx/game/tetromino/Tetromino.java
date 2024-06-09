@@ -2,6 +2,8 @@ package com.mygdx.game.tetromino;
 
 import com.mygdx.game.config.Config;
 
+import java.util.Arrays;
+
 public class Tetromino {
     private String name;
     private Config.ColorEnum color;
@@ -32,7 +34,10 @@ public class Tetromino {
     public Tetromino(Tetromino tetromino) {
         this.name = tetromino.name;
         this.color = tetromino.color;
-        this.shape = tetromino.shape;
+        this.shape = new Block[tetromino.shape.length][];
+        for (int i = 0; i < tetromino.shape.length; i++) {
+            this.shape[i] = Arrays.copyOf(tetromino.shape[i], tetromino.shape[i].length);
+        }
         this.wallKickData = tetromino.wallKickData;
     }
 
