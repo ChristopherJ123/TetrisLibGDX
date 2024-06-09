@@ -1,15 +1,14 @@
 package com.mygdx.game;
 
-import box2dLight.RayHandler;
+import box2dLight.PointLight;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.config.Config;
 import com.mygdx.game.controls.KeyInputProcessor;
@@ -18,7 +17,9 @@ import com.mygdx.game.gamestate.CurrentPiece;
 import com.mygdx.game.gamestate.Queue;
 import com.mygdx.game.gamestate.Score;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GameScreen implements Screen {
@@ -44,9 +45,8 @@ public class GameScreen implements Screen {
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
 
-    // Box2DLights Here
-    World world;
-    RayHandler rayHandler;
+    // Box2DLights stuff
+    List<PointLight> lights;
 
     public GameScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
@@ -75,21 +75,19 @@ public class GameScreen implements Screen {
         colorToTextureMap.put(Config.ColorEnum.BLUE, blueBlock);
         colorToTextureMap.put(Config.ColorEnum.MAGENTA, magentaBlock);
 
-        // Set up Box2D world
-        world = new World(new Vector2(0, 0), true);
-
         // Set cameras
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 600, 800);
         shapeRenderer = new ShapeRenderer();
-
-        rayHandler = new RayHandler(world);
 
         // Application
         board = new Board();
         queue = new Queue();
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
         score = new Score();
+
+        // Box2DLights Stuff
+        lights = new ArrayList<>();
 
         // Initialize key actions
         Runnable leftAction = () -> currentPiece.changeBy(-1, 0, board);
@@ -116,14 +114,6 @@ public class GameScreen implements Screen {
         keyInputProcessor.setRotate180Action(rotate180Action);
         keyInputProcessor.setExitAction(exitAction);
         Gdx.input.setInputProcessor(keyInputProcessor);
-
-//
-//        for (int i = 39; i >= 0; i--) {
-//            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
-//                System.out.print((board.getPlayfield()[i][j].isSolid()) ? "1 " : "0 ");
-//            }
-//            System.out.println();
-//        }
     }
 
     @Override
@@ -141,8 +131,8 @@ public class GameScreen implements Screen {
         tetrisGame.batch.setProjectionMatrix(camera.combined);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Render start
-        shapeRenderer.setColor(0, 0, 0.2f, 1); // Set the color to red
-        shapeRenderer.rect(400, 0, 200, 800); // Example position and size
+        shapeRenderer.setColor(0, 0, 0.2f, 1);
+        shapeRenderer.rect(400, 0, 200, 800);
         shapeRenderer.end(); // Render end
 
         tetrisGame.batch.begin(); // Render start
@@ -168,11 +158,40 @@ public class GameScreen implements Screen {
             }
         }
         tetrisGame.batch.end(); // Render end
+
+        // Render Box2DLights
+        for (PointLight light : lights) {
+            light.remove();
+        }
+        lights.clear();
+        for (int i = 0; i < currentPiece.getTetromino().getShape().length; i++) {
+            for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
+                if (currentPiece.getTetromino().getShape()[i][j].isSolid()) {
+                    Config.ColorEnum blockColor = currentPiece.getTetromino().getShape()[i][j].getColorEnum();
+                    Color color = blockColor.getColor();
+                    float x = (j + currentPiece.getX()) * 40 + 20;
+                    float y = (i + currentPiece.getY()) * 40 + 20;
+                    PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 50, x, y);
+                    lights.add(pointLight);
+                }
+            }
+        }
+        for (int i = 0; i < board.getPlayfield().length; i++) {
+            for (int j = 0; j < board.getPlayfield()[i].length; j++) {
+                Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
+                Color color = blockColor.getColor();
+                PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 50, (j*40) + 20, (i*40) + 20);
+                lights.add(pointLight);
+            }
+        }
+        tetrisGame.getRayHandler().setCombinedMatrix(camera);
+        tetrisGame.getRayHandler().updateAndRender();
+        // Render Box2DLights end
     }
 
     @Override
     public void resize(int width, int height) {
-        System.out.println("Screen is resized to " + width + " " + height);
+
     }
 
     @Override
@@ -193,5 +212,12 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         tetrominoTextures.dispose();
+        shapeRenderer.dispose();
+        tetrisGame.getRayHandler().dispose();
+        for (PointLight light : lights) {
+            light.remove();
+        }
+        lights.clear();
+        tetrisGame.getRayHandler().dispose();
     }
 }
