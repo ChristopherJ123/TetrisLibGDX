@@ -71,12 +71,16 @@ public class Tetromino {
     }
 
     public void setShapeBoolean(boolean[][] shape) {
-        Block[][] shapeBlocks = new Block[shape.length][shape[0].length];
-        for (int i = 0; i < shapeBlocks.length; i++) {
-            for (int j = 0; j < shapeBlocks[i].length; j++) {
-                shapeBlocks[i][j] = (shape[i][j]) ? new Block(this.color, true, false) : new EmptyBlock();
+        int numRows = shape.length;
+        int numCols = shape[0].length;
+        Block[][] shapeBlocks = new Block[numRows][numCols];
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                shapeBlocks[numRows - 1 - i][j] = shape[i][j] ? new Block(this.color, true, false) : new EmptyBlock();
             }
         }
+
         this.shape = shapeBlocks;
     }
 

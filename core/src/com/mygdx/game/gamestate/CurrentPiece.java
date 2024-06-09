@@ -27,6 +27,19 @@ public class CurrentPiece {
         this.y += y;
     }
 
+    public boolean changeBy(int x, int y, Board board) {
+        for (int i = 0; i < tetromino.getShapeBoolean().length; i++) {
+            for (int j = 0; j < tetromino.getShapeBoolean()[i].length; j++) {
+                if (tetromino.getShapeBoolean()[i][j]) {
+                    if (board.playfield[y+i+this.y][x+j+this.x].isPlaced()) return false;
+                }
+            }
+        }
+        this.x += x;
+        this.y += y;
+        return true;
+    }
+
     public Tetromino getTetromino() {
         return tetromino;
     }

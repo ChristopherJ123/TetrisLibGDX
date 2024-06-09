@@ -12,10 +12,15 @@ import com.mygdx.game.gamestate.Board;
 import com.mygdx.game.gamestate.CurrentPiece;
 import com.mygdx.game.gamestate.Queue;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GameScreen implements Screen {
     final TetrisGame tetrisGame;
 
     Texture tetrominoTextures;
+
+    Map<Config.ColorEnum, TextureRegion> colorToTextureMap;
     TextureRegion redBlock;
     TextureRegion orangeBlock;
     TextureRegion yellowBlock;
@@ -47,6 +52,14 @@ public class GameScreen implements Screen {
         blueBlock = new TextureRegion(tetrominoTextures, 0, 192, 192, 192);
         magentaBlock = new TextureRegion(tetrominoTextures, 192, 192, 192, 192);
         grayBlock = new TextureRegion(tetrominoTextures, 384, 192, 192, 192);
+        colorToTextureMap = new HashMap<>();
+        colorToTextureMap.put(Config.ColorEnum.RED, redBlock);
+        colorToTextureMap.put(Config.ColorEnum.ORANGE, orangeBlock);
+        colorToTextureMap.put(Config.ColorEnum.YELLOW, yellowBlock);
+        colorToTextureMap.put(Config.ColorEnum.LIME, limeBlock);
+        colorToTextureMap.put(Config.ColorEnum.TEAL, tealBlock);
+        colorToTextureMap.put(Config.ColorEnum.BLUE, blueBlock);
+        colorToTextureMap.put(Config.ColorEnum.MAGENTA, magentaBlock);
 
         // Set cameras
         camera = new OrthographicCamera();
@@ -57,7 +70,6 @@ public class GameScreen implements Screen {
         queue = new Queue();
         System.out.println(queue.getQueue());
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
-        board.addCurrentPiece(currentPiece);
 
         for (int i = 39; i >= 0; i--) {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
@@ -79,16 +91,25 @@ public class GameScreen implements Screen {
 
         tetrisGame.batch.setProjectionMatrix(camera.combined);
         tetrisGame.batch.begin();
+
+        // Render play field
         for (int i = board.getPlayfield().length-1; i >= 0; i--) {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
-                switch (board.getPlayfield()[i][j].getColor()) {
-                    case RED -> tetrisGame.batch.draw(redBlock, j * 40, i * 40, 40, 40);
-                    case ORANGE -> tetrisGame.batch.draw(orangeBlock, j * 40, i * 40, 40, 40);
-                    case YELLOW -> tetrisGame.batch.draw(yellowBlock, j * 40, i * 40, 40, 40);
-                    case LIME -> tetrisGame.batch.draw(limeBlock, j * 40, i * 40, 40, 40);
-                    case TEAL -> tetrisGame.batch.draw(tealBlock, j * 40, i * 40, 40, 40);
-                    case BLUE -> tetrisGame.batch.draw(blueBlock, j * 40, i * 40, 40, 40);
-                    case MAGENTA -> tetrisGame.batch.draw(magentaBlock, j * 40, i * 40, 40, 40);
+                Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
+                TextureRegion blockTexture = colorToTextureMap.get(blockColor);
+                if (blockTexture != null) {
+                    tetrisGame.batch.draw(blockTexture, j * 40, i * 40, 40, 40);
+                }
+            }
+        }
+
+        // Render current piece
+        for (int i = currentPiece.getTetromino().getShape().length-1; i >= 0; i--) {
+            for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
+                Config.ColorEnum blockColor = currentPiece.getTetromino().getShape()[i][j].getColorEnum();
+                TextureRegion blockTexture = colorToTextureMap.get(blockColor);
+                if (currentPiece.getTetromino().getShape()[i][j].isSolid() && blockTexture != null) {
+                    tetrisGame.batch.draw(blockTexture, (j + currentPiece.getX()) * 40, (i + currentPiece.getY()) * 40, 40, 40);
                 }
             }
         }

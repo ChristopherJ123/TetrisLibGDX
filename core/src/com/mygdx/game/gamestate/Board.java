@@ -5,7 +5,7 @@ import com.mygdx.game.tetromino.Block;
 import com.mygdx.game.tetromino.EmptyBlock;
 
 public class Board {
-    private Block[][] playfield;
+    public Block[][] playfield;
 
     public Board() {
         playfield = new Block[Config.BOARD_HEIGHT + Config.BOARD_BUFFER_ZONE][Config.BOARD_WIDTH];
@@ -18,15 +18,10 @@ public class Board {
     }
 
     public void addCurrentPiece(CurrentPiece currentPiece) {
-        for (int i = 0; i < playfield.length; i++) {
-            for (int j = 0; j < playfield[i].length; j++) {
-                playfield[i][j] = new EmptyBlock();
-            }
-        }
         for (int i = 0; i < currentPiece.getTetromino().getShapeBoolean().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShapeBoolean()[i].length; j++) {
                 if (currentPiece.getTetromino().getShapeBoolean()[i][j]) {
-                    playfield[currentPiece.getY()+(currentPiece.getTetromino().getShapeBoolean().length - 1 - i)][currentPiece.getX()+j] = new Block(currentPiece.getTetromino().getColor(), true, false);
+                    playfield[currentPiece.getY()+i][currentPiece.getX()+j] = new Block(currentPiece.getTetromino().getColor(), true, true);
                 }
             }
         }

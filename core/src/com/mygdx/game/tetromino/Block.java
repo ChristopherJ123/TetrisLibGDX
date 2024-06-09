@@ -25,7 +25,7 @@ public class Block {
         this.isPlaced = isPlaced;
     }
 
-    public Config.ColorEnum getColor() {
+    public Config.ColorEnum getColorEnum() {
         return color;
     }
 
