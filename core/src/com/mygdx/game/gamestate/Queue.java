@@ -29,6 +29,7 @@ public class Queue {
 
     public Tetromino nextQueue() {
         generateQueueRandom7Bag();
+        queue.add(null);
         return queue.remove(0).getType();
     }
 
