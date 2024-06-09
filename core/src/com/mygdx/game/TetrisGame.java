@@ -1,12 +1,23 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class TetrisGame extends Game {
+	private WindowManager windowManager;
+
 	public SpriteBatch batch;
 	public BitmapFont font;
+
+	public TetrisGame(WindowManager windowManager) {
+		this.windowManager = windowManager;
+	}
+
+	public void changeWindowSize(int width, int height) {
+		windowManager.setWindowSize(width, height);
+	}
 
 	@Override
 	public void create() {
