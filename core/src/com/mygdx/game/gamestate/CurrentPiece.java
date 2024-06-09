@@ -25,6 +25,13 @@ public class CurrentPiece {
         this.rotation = rotation;
     }
 
+    public CurrentPiece(CurrentPiece currentPiece) {
+        this.tetromino = new Tetromino(currentPiece.getTetromino());
+        this.x = currentPiece.getX();
+        this.y = currentPiece.getY();
+        this.rotation = currentPiece.getRotation();
+    }
+
     public void changeBy(int x, int y) {
         this.x += x;
         this.y += y;
@@ -40,7 +47,7 @@ public class CurrentPiece {
     }
 
     public boolean rotateBy(int r, Board board) {
-        CurrentPiece currentPieceTemp = new CurrentPiece(tetromino, x, y, rotation);
+        CurrentPiece currentPieceTemp = new CurrentPiece(this);
         int width = tetromino.getShape().length;
         int height = tetromino.getShape()[0].length;
         Block[][] blocks = new Block[height][width];
@@ -49,21 +56,21 @@ public class CurrentPiece {
             case 1 -> {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
-                        blocks[height-1-j][i] = tetromino.getShape()[i][j];
+                        blocks[height-1-j][i] = currentPieceTemp.tetromino.getShape()[i][j];
                     }
                 }
             }
             case 2 -> {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
-                        blocks[height-1-j][width-1-i] = tetromino.getShape()[i][j];
+                        blocks[width-1-i][height-1-j] = currentPieceTemp.tetromino.getShape()[i][j];
                     }
                 }
             }
             case 3 -> {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
-                        blocks[j][width-1-i] = tetromino.getShape()[i][j];
+                        blocks[j][width-1-i] = currentPieceTemp.tetromino.getShape()[i][j];
                     }
                 }
             }
@@ -174,6 +181,12 @@ public class CurrentPiece {
                 }
             }
         }
+        if (r == 2) {
+            if (currentPieceTemp.hitObstacle(board)) return false;
+            else {
+                tetromino = currentPieceTemp.tetromino;
+            }
+        }
         return false;
     }
 
@@ -182,7 +195,9 @@ public class CurrentPiece {
             for (int j = 0; j < tetromino.getShapeBoolean()[i].length; j++) {
                 if (tetromino.getShapeBoolean()[i][j]) {
                     // Return false if failed to move because hit an obstacle
-                    if (board.playfield[i+this.y][j+this.x].isPlaced()) return true;
+                    try {
+                        if (board.playfield[i + this.y][j + this.x].isPlaced()) return true;
+                    } catch (ArrayIndexOutOfBoundsException e) {return true;}
                 }
             }
         }
