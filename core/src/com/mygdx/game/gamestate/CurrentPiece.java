@@ -31,13 +31,16 @@ public class CurrentPiece {
         for (int i = 0; i < tetromino.getShapeBoolean().length; i++) {
             for (int j = 0; j < tetromino.getShapeBoolean()[i].length; j++) {
                 if (tetromino.getShapeBoolean()[i][j]) {
-                    if (board.playfield[y+i+this.y][x+j+this.x].isPlaced()) return false;
+                    // Return false if failed to move because hit an obstacle
+                    try {
+                        if (board.playfield[y+i+this.y][x+j+this.x].isPlaced()) return false;
+                    } catch (ArrayIndexOutOfBoundsException e) {return false;}
                 }
             }
         }
         this.x += x;
         this.y += y;
-        return true;
+        return true; // Return true if successfully moved
     }
 
     public Tetromino getTetromino() {
