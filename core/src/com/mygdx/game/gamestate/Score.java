@@ -1,11 +1,16 @@
 package com.mygdx.game.gamestate;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
+
 public class Score {
     private int level;
     private int score;
     private int combo;
     private int b2b;
     private int b2bLineClear;
+
+    private Sound scoreSound = Gdx.audio.newSound(Gdx.files.internal("sound/TetrisRowComplete.wav"));
 
     public Score() {
         this.level = 1;
@@ -53,6 +58,7 @@ public class Score {
                 }
             }
             if (lineClear) {
+                scoreSound.play();
                 lineClearCount++;
                 for (int j = i; j < board.playfield.length - 1; j++) {
                     for (int k = 0; k < board.playfield[j].length; k++) {

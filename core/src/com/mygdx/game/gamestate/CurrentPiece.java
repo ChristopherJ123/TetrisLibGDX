@@ -1,5 +1,7 @@
 package com.mygdx.game.gamestate;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.mygdx.game.tetromino.Block;
 import com.mygdx.game.tetromino.Tetromino;
 
@@ -10,6 +12,7 @@ public class CurrentPiece {
     private int x;
     private int y;
     private int rotation;
+    private Sound rotateSound = Gdx.audio.newSound(Gdx.files.internal("sound/switch.wav"));
 
     public CurrentPiece(Tetromino tetromino, int x, int y) {
         this.tetromino = tetromino;
@@ -47,6 +50,7 @@ public class CurrentPiece {
     }
 
     public boolean rotateBy(int r, Board board) {
+        rotateSound.play();
         CurrentPiece currentPieceTemp = new CurrentPiece(this);
         int width = tetromino.getShape().length;
         int height = tetromino.getShape()[0].length;

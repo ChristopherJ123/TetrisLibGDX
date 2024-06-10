@@ -1,11 +1,14 @@
 package com.mygdx.game.gamestate;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.mygdx.game.config.Config;
 import com.mygdx.game.tetromino.Block;
 import com.mygdx.game.tetromino.EmptyBlock;
 
 public class Board {
     public Block[][] playfield;
+    private Sound blockPlacedSound = Gdx.audio.newSound(Gdx.files.internal("sound/blockPlacedSound.wav"));
 
     public Board() {
         playfield = new Block[Config.BOARD_HEIGHT + Config.BOARD_BUFFER_ZONE][Config.BOARD_WIDTH];
@@ -18,6 +21,7 @@ public class Board {
     }
 
     public void placeCurrentPiece(CurrentPiece currentPiece) {
+        blockPlacedSound.play();
         for (int i = 0; i < currentPiece.getTetromino().getShapeBoolean().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShapeBoolean()[i].length; j++) {
                 if (currentPiece.getTetromino().getShapeBoolean()[i][j]) {

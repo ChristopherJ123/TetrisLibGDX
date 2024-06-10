@@ -3,6 +3,9 @@ package com.mygdx.game;
 import box2dLight.PointLight;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -35,13 +38,12 @@ public class GameScreen implements Screen {
     TextureRegion blueBlock;
     TextureRegion magentaBlock;
     TextureRegion grayBlock;
-
+    Music backgroundMusic;
     Board board;
     Queue queue;
     CurrentPiece currentPiece;
     Score score;
     KeyInputProcessor keyInputProcessor;
-
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
 
@@ -57,7 +59,6 @@ public class GameScreen implements Screen {
 
         // Load textures
         tetrominoTextures = new Texture(Gdx.files.internal("img/texture.png"));
-
         redBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
         orangeBlock = new TextureRegion(tetrominoTextures, 192, 0, 192, 192);
         yellowBlock = new TextureRegion(tetrominoTextures, 384, 0, 192, 192);
@@ -66,6 +67,7 @@ public class GameScreen implements Screen {
         blueBlock = new TextureRegion(tetrominoTextures, 0, 192, 192, 192);
         magentaBlock = new TextureRegion(tetrominoTextures, 192, 192, 192, 192);
         grayBlock = new TextureRegion(tetrominoTextures, 384, 192, 192, 192);
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/TetrisAlt.wav"));
         colorToTextureMap = new HashMap<>();
         colorToTextureMap.put(Config.ColorEnum.RED, redBlock);
         colorToTextureMap.put(Config.ColorEnum.ORANGE, orangeBlock);
@@ -85,6 +87,9 @@ public class GameScreen implements Screen {
         queue = new Queue();
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
         score = new Score();
+
+        // Music
+        backgroundMusic.play();
 
         // Box2DLights Stuff
         lights = new ArrayList<>();
