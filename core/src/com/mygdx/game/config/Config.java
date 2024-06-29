@@ -38,7 +38,8 @@ public class Config {
         BLUE(Color.BLUE),
         MAGENTA(Color.MAGENTA),
         BLACK(Color.BLACK),
-        WHITE(Color.WHITE);
+        WHITE(Color.WHITE),
+        PLACEMENT(Color.GRAY);
 
         private final Color color;
 

@@ -4,8 +4,6 @@ import box2dLight.PointLight;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,10 +13,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.config.Config;
 import com.mygdx.game.controls.KeyInputProcessor;
-import com.mygdx.game.gamestate.Board;
-import com.mygdx.game.gamestate.CurrentPiece;
-import com.mygdx.game.gamestate.Queue;
-import com.mygdx.game.gamestate.Score;
+import com.mygdx.game.gamestate.*;
+import com.mygdx.game.tetromino.Tetromino;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,15 +33,19 @@ public class GameScreen implements Screen {
     TextureRegion tealBlock;
     TextureRegion blueBlock;
     TextureRegion magentaBlock;
-    TextureRegion grayBlock;
+    TextureRegion placementBlock;
     Music backgroundMusic;
     Board board;
     Queue queue;
     CurrentPiece currentPiece;
+    HoldPiece holdPiece;
     Score score;
     KeyInputProcessor keyInputProcessor;
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
+
+    private float AutoDropDelayTimer = 0;
+    private final float AutoDropDelay = 1; // Automatic Drop delay
 
     // Box2DLights stuff
     List<PointLight> lights;
@@ -66,7 +66,7 @@ public class GameScreen implements Screen {
         tealBlock = new TextureRegion(tetrominoTextures, 768, 0, 192, 192);
         blueBlock = new TextureRegion(tetrominoTextures, 0, 192, 192, 192);
         magentaBlock = new TextureRegion(tetrominoTextures, 192, 192, 192, 192);
-        grayBlock = new TextureRegion(tetrominoTextures, 384, 192, 192, 192);
+        placementBlock = new TextureRegion(tetrominoTextures, 768, 192, 192, 192);
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/TetrisAlt.wav"));
         colorToTextureMap = new HashMap<>();
         colorToTextureMap.put(Config.ColorEnum.RED, redBlock);
@@ -76,6 +76,7 @@ public class GameScreen implements Screen {
         colorToTextureMap.put(Config.ColorEnum.TEAL, tealBlock);
         colorToTextureMap.put(Config.ColorEnum.BLUE, blueBlock);
         colorToTextureMap.put(Config.ColorEnum.MAGENTA, magentaBlock);
+        colorToTextureMap.put(Config.ColorEnum.PLACEMENT, placementBlock);
 
         // Set cameras
         camera = new OrthographicCamera();
@@ -86,6 +87,7 @@ public class GameScreen implements Screen {
         board = new Board();
         queue = new Queue();
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+        holdPiece = new HoldPiece();
         score = new Score();
 
         // Music
@@ -95,18 +97,27 @@ public class GameScreen implements Screen {
         lights = new ArrayList<>();
 
         // Initialize key actions
-        Runnable leftAction = () -> currentPiece.changeBy(-1, 0, board);
-        Runnable rightAction = () -> currentPiece.changeBy(1, 0, board);
-        Runnable downAction = () -> currentPiece.changeBy(0, -1, board);
+        Runnable leftAction = () -> currentPiece.moveLeft(board);
+        Runnable rightAction = () -> currentPiece.moveRight(board);
+        Runnable downAction = () -> currentPiece.moveDown(board);
         Runnable spaceAction = () -> {
             while (currentPiece.changeBy(0, -1, board));
             board.placeCurrentPiece(currentPiece);
             score.clearLineIfAny(board);
             currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+            holdPiece.setRecentlyUsedHold(false);
         };
-        Runnable rotateLeftAction = () -> currentPiece.rotateBy(-1, board);
-        Runnable rotateRightAction = () -> currentPiece.rotateBy(1, board);
-        Runnable rotate180Action = () -> currentPiece.rotateBy(2, board);
+        Runnable rotateLeftAction = () -> currentPiece.rotateLeft(board);
+        Runnable rotateRightAction = () -> currentPiece.rotateRight(board);
+        Runnable rotate180Action = () -> currentPiece.rotate180(board);
+        Runnable holdAction = () -> {
+            if (!holdPiece.isRecentlyUsedHold()) {
+                Tetromino holdingPiece = holdPiece.set(currentPiece.getTetromino());
+                if (holdingPiece != null) currentPiece = new CurrentPiece(holdingPiece, Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+                else currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+                holdPiece.setRecentlyUsedHold(true);
+            }
+        };
         Runnable exitAction = () -> System.exit(0);
 
         keyInputProcessor = new KeyInputProcessor();
@@ -117,6 +128,7 @@ public class GameScreen implements Screen {
         keyInputProcessor.setRotateLeftAction(rotateLeftAction);
         keyInputProcessor.setRotateRightAction(rotateRightAction);
         keyInputProcessor.setRotate180Action(rotate180Action);
+        keyInputProcessor.setHoldAction(holdAction);
         keyInputProcessor.setExitAction(exitAction);
         Gdx.input.setInputProcessor(keyInputProcessor);
     }
@@ -132,6 +144,14 @@ public class GameScreen implements Screen {
 
         keyInputProcessor.update(delta); // Listen keyboard inputs
 
+        AutoDropDelayTimer += delta; // Timer for automatic drop
+        if (AutoDropDelayTimer >= AutoDropDelay) {
+            if (!currentPiece.moveDown(board)) {
+                board.placeCurrentPiece(currentPiece);
+            }
+            AutoDropDelayTimer = 0;
+        }
+
         camera.update();
         tetrisGame.batch.setProjectionMatrix(camera.combined);
 
@@ -140,8 +160,18 @@ public class GameScreen implements Screen {
         shapeRenderer.rect(400, 0, 200, 800);
         shapeRenderer.end(); // Render end
 
-        tetrisGame.batch.begin(); // Render start
-        // Render play field
+        tetrisGame.batch.begin(); // Render batch start
+        renderPlayField(); // Render play field
+        renderCurrentPiece(); // Render current piece
+        renderPlacementOutlinePiece(); // Render placement outline piece
+        renderQueue(); // Render Queue
+        renderHoldPiece(); // Render Hold Piece
+        tetrisGame.batch.end(); // Render batch end
+
+        renderBox2DLights(); // Render Box2DLights
+    }
+
+    public void renderPlayField() {
         for (int i = 0; i < board.getPlayfield().length; i++) {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
                 Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
@@ -151,8 +181,9 @@ public class GameScreen implements Screen {
                 }
             }
         }
+    }
 
-        // Render current piece
+    public void renderCurrentPiece() {
         for (int i = 0; i < currentPiece.getTetromino().getShape().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
                 Config.ColorEnum blockColor = currentPiece.getTetromino().getShape()[i][j].getColorEnum();
@@ -162,9 +193,48 @@ public class GameScreen implements Screen {
                 }
             }
         }
-        tetrisGame.batch.end(); // Render end
+    }
 
-        // Render Box2DLights
+    public void renderPlacementOutlinePiece() {
+        for (int i = 0; i < currentPiece.getTetromino().getShape().length; i++) {
+            for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
+                if (currentPiece.getTetromino().getShape()[i][j].isSolid()) {
+                    tetrisGame.batch.draw(colorToTextureMap.get(Config.ColorEnum.PLACEMENT), (j + currentPiece.getX()) * 40, (i + currentPiece.getPlacementY(board) + 1) * 40, 40, 40);
+                }
+            }
+        }
+    }
+
+    public void renderQueue() {
+        ArrayList<Config.Tetrominoes> currentQueue = queue.getQueue();
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < currentQueue.get(i).getType().getShape().length; j++) {
+                for (int k = 0; k < currentQueue.get(i).getType().getShape()[j].length; k++) {
+                    Config.ColorEnum blockColor = currentQueue.get(i).getType().getShape()[j][k].getColorEnum();
+                    TextureRegion blockTexture = colorToTextureMap.get(blockColor);
+                    if (currentQueue.get(i).getType().getShape()[j][k].isSolid() && blockTexture != null) {
+                        tetrisGame.batch.draw(blockTexture, 440 + (k * 40), 120*(5-i) + (j * 40) - 120, 40, 40);
+                    }
+                }
+            }
+        }
+    }
+
+    public void renderHoldPiece() {
+        if (holdPiece.getTetromino() != null) {
+            for (int i = 0; i < holdPiece.getTetromino().getShape().length; i++) {
+                for (int j = 0; j < holdPiece.getTetromino().getShape()[i].length; j++) {
+                    Config.ColorEnum blockColor = holdPiece.getTetromino().getShape()[i][j].getColorEnum();
+                    TextureRegion blockTexture = colorToTextureMap.get(blockColor);
+                    if (holdPiece.getTetromino().getShape()[i][j].isSolid() && blockTexture != null) {
+                        tetrisGame.batch.draw(blockTexture, 440 + (j * 40), 640 + (i * 40), 40, 40);
+                    }
+                }
+            }
+        }
+    }
+
+    public void renderBox2DLights() {
         for (PointLight light : lights) {
             light.remove();
         }
@@ -176,7 +246,7 @@ public class GameScreen implements Screen {
                     Color color = blockColor.getColor();
                     float x = (j + currentPiece.getX()) * 40 + 20;
                     float y = (i + currentPiece.getY()) * 40 + 20;
-                    PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 50, x, y);
+                    PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, x, y);
                     lights.add(pointLight);
                 }
             }
@@ -185,7 +255,7 @@ public class GameScreen implements Screen {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
                 Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
                 Color color = blockColor.getColor();
-                PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 50, (j*40) + 20, (i*40) + 20);
+                PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, (j*40) + 20, (i*40) + 20);
                 lights.add(pointLight);
             }
         }

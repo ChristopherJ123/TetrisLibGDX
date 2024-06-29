@@ -1,18 +1,17 @@
 package com.mygdx.game.gamestate;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
+import com.mygdx.game.controls.Moveable;
+import com.mygdx.game.controls.Soundable;
 import com.mygdx.game.tetromino.Block;
 import com.mygdx.game.tetromino.Tetromino;
 
 import java.util.ArrayList;
 
-public class CurrentPiece {
+public class CurrentPiece implements Moveable, Soundable {
     private Tetromino tetromino;
     private int x;
     private int y;
     private int rotation;
-    private Sound rotateSound = Gdx.audio.newSound(Gdx.files.internal("sound/switch.wav"));
 
     public CurrentPiece(Tetromino tetromino, int x, int y) {
         this.tetromino = tetromino;
@@ -50,7 +49,7 @@ public class CurrentPiece {
     }
 
     public boolean rotateBy(int r, Board board) {
-        rotateSound.play();
+        playSound("switch", "wav");
         CurrentPiece currentPieceTemp = new CurrentPiece(this);
         int width = tetromino.getShape().length;
         int height = tetromino.getShape()[0].length;
@@ -214,12 +213,19 @@ public class CurrentPiece {
                 if (tetromino.getShapeBoolean()[i][j]) {
                     // Return false if failed to move because hit an obstacle
                     try {
-                        if (board.playfield[y+i+this.y][x+j+this.x].isPlaced()) return true;
+                        if (board.playfield[y+i+this.y][x+j+this.x].isPlaced())
+                            return true;
                     } catch (ArrayIndexOutOfBoundsException e) {return true;}
                 }
             }
         }
         return false;
+    }
+
+    public int getPlacementY(Board board) {
+        int y = -1;
+        while (!hitObstacle(0, y, board)) y--;
+        return y + this.y;
     }
 
     public Tetromino getTetromino() {
@@ -252,5 +258,35 @@ public class CurrentPiece {
 
     public void setRotation(int rotation) {
         this.rotation = rotation;
+    }
+
+    @Override
+    public boolean moveLeft(Board board) {
+        return changeBy(-1, 0, board);
+    }
+
+    @Override
+    public boolean moveRight(Board board) {
+        return changeBy(1, 0, board);
+    }
+
+    @Override
+    public boolean moveDown(Board board) {
+        return changeBy(0, -1, board);
+    }
+
+    @Override
+    public boolean rotateLeft(Board board) {
+        return rotateBy(-1, board);
+    }
+
+    @Override
+    public boolean rotateRight(Board board) {
+        return rotateBy(1, board);
+    }
+
+    @Override
+    public boolean rotate180(Board board) {
+        return rotateBy(2, board);
     }
 }
