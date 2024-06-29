@@ -45,7 +45,6 @@ public class GameScreen implements Screen {
     OrthographicCamera camera;
 
     private float AutoDropDelayTimer = 0;
-    private final float AutoDropDelay = 1; // Automatic Drop delay
 
     // Box2DLights stuff
     List<PointLight> lights;
@@ -145,9 +144,13 @@ public class GameScreen implements Screen {
         keyInputProcessor.update(delta); // Listen keyboard inputs
 
         AutoDropDelayTimer += delta; // Timer for automatic drop
-        if (AutoDropDelayTimer >= AutoDropDelay) {
+        // Automatic Drop delay
+        if (AutoDropDelayTimer >= Config.AUTO_DROP_DELAY) {
             if (!currentPiece.moveDown(board)) {
                 board.placeCurrentPiece(currentPiece);
+                score.clearLineIfAny(board);
+                currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+                holdPiece.setRecentlyUsedHold(false);
             }
             AutoDropDelayTimer = 0;
         }

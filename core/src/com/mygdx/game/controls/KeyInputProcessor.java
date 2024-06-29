@@ -3,6 +3,7 @@ package com.mygdx.game.controls;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.mygdx.game.config.Config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,8 +12,6 @@ import java.util.List;
 public class KeyInputProcessor extends InputAdapter {
     private float DASDelayTimer = 0;
     private float ARRDelayTimer = 0;
-    private final float DAS = 0.4f; // Initial delay
-    private final float ARR = 0.05f; // Repeat delay
     private Runnable leftAction;
     private Runnable rightAction;
     private Runnable downAction;
@@ -59,7 +58,7 @@ public class KeyInputProcessor extends InputAdapter {
         // Repeating movements here
         DASDelayTimer += delta;
         ARRDelayTimer += delta;
-        if (DASDelayTimer >= DAS && ARRDelayTimer >= ARR) {
+        if (DASDelayTimer >= Config.DAS && ARRDelayTimer >= Config.ARR) {
             if (!movementKeysPressed.isEmpty()) {
                 switch (movementKeysPressed.get(movementKeysPressed.size()-1)) {
                     case Input.Keys.LEFT, Input.Keys.NUMPAD_4 -> leftAction.run();
