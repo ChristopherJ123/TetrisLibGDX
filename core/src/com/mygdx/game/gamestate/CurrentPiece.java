@@ -44,6 +44,8 @@ public class CurrentPiece implements Moveable, Soundable {
             this.x += x;
             this.y += y;
             return true; // Return true if successfully moved
+        } else if (hitWall(x, y, board)) {
+            playSound("hit", "wav");
         }
         return false;
     }
@@ -185,7 +187,12 @@ public class CurrentPiece implements Moveable, Soundable {
             }
         }
         if (r == 2) {
-            if (currentPieceTemp.hitObstacle(board)) return false;
+            if (currentPieceTemp.hitObstacle(board)) {
+                if (currentPieceTemp.hitWall(x, y, board)) {
+                    playSound("hit", "wav");
+                }
+                    return false;
+                }
             else {
                 tetromino = currentPieceTemp.tetromino;
             }
@@ -216,6 +223,20 @@ public class CurrentPiece implements Moveable, Soundable {
                         if (board.playfield[y+i+this.y][x+j+this.x].isPlaced())
                             return true;
                     } catch (ArrayIndexOutOfBoundsException e) {return true;}
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hitWall(int x, int y, Board board) {
+        for (int i = 0; i < tetromino.getShapeBoolean().length; i++) {
+            for (int j = 0; j < tetromino.getShapeBoolean()[i].length; j++) {
+                if (tetromino.getShapeBoolean()[i][j]) {
+                    // Check if the block is hitting the left or right wall
+                    if (x + j + this.x < 0 || x + j + this.x >= board.playfield[0].length) {
+                        return true;
+                    }
                 }
             }
         }
@@ -262,16 +283,19 @@ public class CurrentPiece implements Moveable, Soundable {
 
     @Override
     public boolean moveLeft(Board board) {
+        playSound("move", "wav");
         return changeBy(-1, 0, board);
     }
 
     @Override
     public boolean moveRight(Board board) {
+        playSound("move", "wav");
         return changeBy(1, 0, board);
     }
 
     @Override
     public boolean moveDown(Board board) {
+        playSound("move", "wav");
         return changeBy(0, -1, board);
     }
 

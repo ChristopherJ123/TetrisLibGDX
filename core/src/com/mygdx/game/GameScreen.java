@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.config.Config;
 import com.mygdx.game.controls.KeyInputProcessor;
+import com.mygdx.game.controls.Soundable;
 import com.mygdx.game.gamestate.*;
 import com.mygdx.game.tetromino.Tetromino;
 
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GameScreen implements Screen {
+public class GameScreen implements Screen, Soundable {
     final TetrisGame tetrisGame;
 
     Texture tetrominoTextures;
@@ -115,6 +116,7 @@ public class GameScreen implements Screen {
                 if (holdingPiece != null) currentPiece = new CurrentPiece(holdingPiece, Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
                 else currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
                 holdPiece.setRecentlyUsedHold(true);
+                playSound("hold", "wav");
             }
         };
         Runnable exitAction = () -> System.exit(0);

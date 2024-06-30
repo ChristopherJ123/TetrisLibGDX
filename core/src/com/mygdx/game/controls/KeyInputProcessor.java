@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class KeyInputProcessor extends InputAdapter {
+public class KeyInputProcessor extends InputAdapter implements Soundable {
     private float DASDelayTimer = 0;
     private float ARRDelayTimer = 0;
     private Runnable leftAction;

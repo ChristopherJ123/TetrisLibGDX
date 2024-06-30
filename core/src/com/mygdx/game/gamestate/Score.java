@@ -2,15 +2,15 @@ package com.mygdx.game.gamestate;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.mygdx.game.controls.Soundable;
 
-public class Score {
+public class Score implements Soundable {
     private int level;
     private int score;
     private int combo;
     private int b2b;
     private int b2bLineClear;
 
-    private Sound scoreSound = Gdx.audio.newSound(Gdx.files.internal("sound/TetrisRowComplete.wav"));
 
     public Score() {
         this.level = 1;
@@ -58,7 +58,6 @@ public class Score {
                 }
             }
             if (lineClear) {
-                scoreSound.play();
                 lineClearCount++;
                 for (int j = i; j < board.playfield.length - 1; j++) {
                     for (int k = 0; k < board.playfield[j].length; k++) {
@@ -68,6 +67,26 @@ public class Score {
                 i--;
             }
         }
+
+        if (lineClearCount > 0) {
+            if (lineClearCount == 4) {
+                playSound("4Rows", "wav");
+            } else {
+                switch (getCombo()) {
+                    case 0: playSound("combo1", "wav"); setCombo(1); break;
+                    case 1: playSound("combo2", "wav"); setCombo(2); break;
+                    case 2: playSound("combo3", "wav"); setCombo(3); break;
+                    case 3: playSound("combo4", "wav"); setCombo(4); break;
+                    case 4: playSound("combo5", "wav"); setCombo(5); break;
+                    case 5: playSound("combo6", "wav"); setCombo(6); break;
+                    case 6: playSound("combo7", "wav"); setCombo(7); break;
+                    case 7: playSound("combo8", "wav"); setCombo(0); break;
+                    default: break;
+                }
+            }
+        }
+
+
         addScoreOfLines(lineClearCount);
         return lineClearCount != 0;
     }
