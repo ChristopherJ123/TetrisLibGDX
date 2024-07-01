@@ -5,8 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -44,6 +47,8 @@ public class GameScreen implements Screen, Soundable {
     KeyInputProcessor keyInputProcessor;
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
+    BitmapFont font;
+    GlyphLayout layout;
 
     private float AutoDropDelayTimer = 0;
 
@@ -52,7 +57,7 @@ public class GameScreen implements Screen, Soundable {
 
     public GameScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
-        tetrisGame.changeWindowSize(600, 800);
+        tetrisGame.changeWindowSize(1200, 800);
 
         // Batch of sprites
         tetrisGame.batch = new SpriteBatch();
@@ -80,7 +85,7 @@ public class GameScreen implements Screen, Soundable {
 
         // Set cameras
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 600, 800);
+        camera.setToOrtho(false, 1200, 800);
         shapeRenderer = new ShapeRenderer();
 
         // Application
@@ -91,7 +96,12 @@ public class GameScreen implements Screen, Soundable {
         score = new Score();
 
         // Music
+        backgroundMusic.setLooping(true);
         backgroundMusic.play();
+
+        // Text
+        font = new BitmapFont();
+        layout = new GlyphLayout();
 
         // Box2DLights Stuff
         lights = new ArrayList<>();
@@ -160,10 +170,18 @@ public class GameScreen implements Screen, Soundable {
         camera.update();
         tetrisGame.batch.setProjectionMatrix(camera.combined);
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Render start
-        shapeRenderer.setColor(0, 0, 0.2f, 1);
-        shapeRenderer.rect(400, 0, 200, 800);
-        shapeRenderer.end(); // Render end
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        renderGrid();
+
+        borderHold();
+        borderPlayfield();
+        borderQueue();
+
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Render start
+//        shapeRenderer.setColor(0, 0, 0.2f, 1);
+//        shapeRenderer.rect(400 + 400, 0, 200, 800);
+//        shapeRenderer.end(); // Render end
 
         tetrisGame.batch.begin(); // Render batch start
         renderPlayField(); // Render play field
@@ -171,6 +189,18 @@ public class GameScreen implements Screen, Soundable {
         renderPlacementOutlinePiece(); // Render placement outline piece
         renderQueue(); // Render Queue
         renderHoldPiece(); // Render Hold Piece
+        font.getData().setScale(2);
+        layout.setText(font, "SCORE");
+        font.draw(tetrisGame.batch, layout, 140, 460);
+        font.getData().setScale(2);
+        layout.setText(font, "" + score.getScore());
+        font.draw(tetrisGame.batch, layout, 140, 420);
+        font.getData().setScale(2); // Set Font Size
+        layout.setText(font, "NEXT");
+        font.draw(tetrisGame.batch, layout, 440 + 520 - layout.width / 2, 740); // Center "NEXT"" Horizontally
+        font.getData().setScale(2); // Set Font Size
+        layout.setText(font, "HOLD");
+        font.draw(tetrisGame.batch, layout, 240 - layout.width / 2, 740); // Center "HOLD"" Horizontally
         tetrisGame.batch.end(); // Render batch end
 
         renderBox2DLights(); // Render Box2DLights
@@ -182,10 +212,28 @@ public class GameScreen implements Screen, Soundable {
                 Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
                 TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                 if (blockTexture != null) {
-                    tetrisGame.batch.draw(blockTexture, j * 40, i * 40, 40, 40);
+                    tetrisGame.batch.draw(blockTexture, 400 + (j * 40), i * 40, 40, 40);
                 }
             }
         }
+    }
+
+    public void renderGrid () {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(new Color(1, 1, 1, 0.25f));
+
+        // x 400 y 800
+        for (int x = 0; x <= Config.BOARD_WIDTH * 40; x += 40) {
+            shapeRenderer.line(x + 400, 0, x + 400, Config.BOARD_HEIGHT * 40);
+        }
+
+        for (int y = 0; y <= Config.BOARD_HEIGHT * 40; y += 40) {
+            shapeRenderer.line(400, y, (Config.BOARD_WIDTH * 40) + 400, y);
+        }
+
+        shapeRenderer.end();
     }
 
     public void renderCurrentPiece() {
@@ -194,7 +242,7 @@ public class GameScreen implements Screen, Soundable {
                 Config.ColorEnum blockColor = currentPiece.getTetromino().getShape()[i][j].getColorEnum();
                 TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                 if (currentPiece.getTetromino().getShape()[i][j].isSolid() && blockTexture != null) {
-                    tetrisGame.batch.draw(blockTexture, (j + currentPiece.getX()) * 40, (i + currentPiece.getY()) * 40, 40, 40);
+                    tetrisGame.batch.draw(blockTexture, 400+ ((j + currentPiece.getX()) * 40), (i + currentPiece.getY()) * 40, 40, 40);
                 }
             }
         }
@@ -204,7 +252,7 @@ public class GameScreen implements Screen, Soundable {
         for (int i = 0; i < currentPiece.getTetromino().getShape().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
                 if (currentPiece.getTetromino().getShape()[i][j].isSolid()) {
-                    tetrisGame.batch.draw(colorToTextureMap.get(Config.ColorEnum.PLACEMENT), (j + currentPiece.getX()) * 40, (i + currentPiece.getPlacementY(board) + 1) * 40, 40, 40);
+                    tetrisGame.batch.draw(colorToTextureMap.get(Config.ColorEnum.PLACEMENT), 400 + ((j + currentPiece.getX()) * 40), (i + currentPiece.getPlacementY(board) + 1) * 40, 40, 40);
                 }
             }
         }
@@ -218,7 +266,7 @@ public class GameScreen implements Screen, Soundable {
                     Config.ColorEnum blockColor = currentQueue.get(i).getType().getShape()[j][k].getColorEnum();
                     TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                     if (currentQueue.get(i).getType().getShape()[j][k].isSolid() && blockTexture != null) {
-                        tetrisGame.batch.draw(blockTexture, 440 + (k * 40), 120*(5-i) + (j * 40) - 120, 40, 40);
+                        tetrisGame.batch.draw(blockTexture, 460 + 440 + (k * 40), 120*(5-i) + (j * 40) - 80, 40, 40);
                     }
                 }
             }
@@ -232,7 +280,7 @@ public class GameScreen implements Screen, Soundable {
                     Config.ColorEnum blockColor = holdPiece.getTetromino().getShape()[i][j].getColorEnum();
                     TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                     if (holdPiece.getTetromino().getShape()[i][j].isSolid() && blockTexture != null) {
-                        tetrisGame.batch.draw(blockTexture, 440 + (j * 40), 640 + (i * 40), 40, 40);
+                        tetrisGame.batch.draw(blockTexture, 180 + (j * 40), 500 + (i * 40), 40, 40);
                     }
                 }
             }
@@ -251,7 +299,7 @@ public class GameScreen implements Screen, Soundable {
                     Color color = blockColor.getColor();
                     float x = (j + currentPiece.getX()) * 40 + 20;
                     float y = (i + currentPiece.getY()) * 40 + 20;
-                    PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, x, y);
+                    PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, 400 + x, y);
                     lights.add(pointLight);
                 }
             }
@@ -260,13 +308,34 @@ public class GameScreen implements Screen, Soundable {
             for (int j = 0; j < board.getPlayfield()[i].length; j++) {
                 Config.ColorEnum blockColor = board.getPlayfield()[i][j].getColorEnum();
                 Color color = blockColor.getColor();
-                PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, (j*40) + 20, (i*40) + 20);
+                PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, 400 + (j*40) + 20, (i*40) + 20);
                 lights.add(pointLight);
             }
         }
         tetrisGame.getRayHandler().setCombinedMatrix(camera);
         tetrisGame.getRayHandler().updateAndRender();
         // Render Box2DLights end
+    }
+
+    public void borderHold() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(140, 480, 200, 200);
+        shapeRenderer.end();
+    }
+
+    public void borderPlayfield() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(400, 0, Config.BOARD_WIDTH * 40, Config.BOARD_HEIGHT * 40);
+        shapeRenderer.end();
+    }
+
+    public void borderQueue() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(860, 40, 200, 640);
+        shapeRenderer.end();
     }
 
     @Override
