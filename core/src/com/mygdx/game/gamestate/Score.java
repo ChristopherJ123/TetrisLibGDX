@@ -86,7 +86,6 @@ public class Score implements Soundable {
             }
         }
 
-
         addScoreOfLines(lineClearCount);
         return lineClearCount != 0;
     }

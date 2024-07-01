@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import box2dLight.PointLight;
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -169,7 +170,6 @@ public class GameScreen implements Screen, Soundable {
 
         camera.update();
         tetrisGame.batch.setProjectionMatrix(camera.combined);
-
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         renderGrid();
