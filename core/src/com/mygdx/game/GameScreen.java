@@ -105,8 +105,8 @@ public class GameScreen implements Screen, Soundable {
         score = new Score();
 
         // Music
-//        backgroundMusic.setLooping(true);
-//        backgroundMusic.play();
+        backgroundMusic.setLooping(true);
+        backgroundMusic.play();
 
         // Text
         font = new BitmapFont();
