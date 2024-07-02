@@ -51,7 +51,10 @@ public class GameScreen implements Screen, Soundable {
     BitmapFont font;
     GlyphLayout layout;
     Texture holdInside;
+    Texture holdSign;
     Texture queueInside;
+    Texture queueSign;
+    Texture scoreSign;
 
     private float AutoDropDelayTimer = 0;
 
@@ -102,12 +105,15 @@ public class GameScreen implements Screen, Soundable {
         score = new Score();
 
         // Music
-        backgroundMusic.setLooping(true);
-        backgroundMusic.play();
+//        backgroundMusic.setLooping(true);
+//        backgroundMusic.play();
 
         // Text
         font = new BitmapFont();
         layout = new GlyphLayout();
+        holdSign = new Texture(Gdx.files.internal("img/holdSign.png"));
+        queueSign = new Texture(Gdx.files.internal("img/nextSign.png"));
+        scoreSign = new Texture(Gdx.files.internal("img/scoreSign.png"));
 
         // Box2DLights Stuff
         lights = new ArrayList<>();
@@ -185,22 +191,18 @@ public class GameScreen implements Screen, Soundable {
         renderPlayField(); // Render play field
         renderCurrentPiece(); // Render current piece
         renderPlacementOutlinePiece(); // Render placement outline piece
-        tetrisGame.batch.draw(holdInside, 140, 480);
-        tetrisGame.batch.draw(queueInside, 860, 40);
+        tetrisGame.batch.draw(holdInside, 185, 520);
+        tetrisGame.batch.draw(queueInside, 815, 80);
         renderQueue(); // Render Queue
         renderHoldPiece(); // Render Hold Piece
-        font.getData().setScale(2);
-        layout.setText(font, "SCORE");
-        font.draw(tetrisGame.batch, layout, 140, 460);
+        tetrisGame.batch.draw(scoreSign, 250, 240);
         font.getData().setScale(2);
         layout.setText(font, "" + score.getScore());
-        font.draw(tetrisGame.batch, layout, 140, 420);
-        font.getData().setScale(2); // Set Font Size
-        layout.setText(font, "NEXT");
-        font.draw(tetrisGame.batch, layout, 440 + 520 - layout.width / 2, 740); // Center "NEXT"" Horizontally
-        font.getData().setScale(2); // Set Font Size
-        layout.setText(font, "HOLD");
-        font.draw(tetrisGame.batch, layout, 240 - layout.width / 2, 740); // Center "HOLD"" Horizontally
+        layout.setText(font, "" + score.getScore());
+        float scoreWidth = layout.width;
+        font.draw(tetrisGame.batch, layout, 368 - scoreWidth, 230);
+        tetrisGame.batch.draw(queueSign, 800, 720);
+        tetrisGame.batch.draw(holdSign, 170, 720);
         tetrisGame.batch.end(); // Render batch end
 
         renderBox2DLights(); // Render Box2DLights
@@ -259,7 +261,6 @@ public class GameScreen implements Screen, Soundable {
         }
         tetrisGame.batch.setColor(1, 1, 1, 1);
     }
-
     public void renderQueue() {
         ArrayList<Config.Tetrominoes> currentQueue = queue.getQueue();
         for (int i = 0; i < 5; i++) {
@@ -268,13 +269,12 @@ public class GameScreen implements Screen, Soundable {
                     Config.ColorEnum blockColor = currentQueue.get(i).getType().getShape()[j][k].getColorEnum();
                     TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                     if (currentQueue.get(i).getType().getShape()[j][k].isSolid() && blockTexture != null) {
-                        tetrisGame.batch.draw(blockTexture, 460 + 440 + (k * 40), 120*(5-i) + (j * 40) - 80, 40, 40);
+                        tetrisGame.batch.draw(blockTexture, 415 + 440 + (k * 40), 120*(5-i) + (j * 40) - 80 + 35, 40, 40);
                     }
                 }
             }
         }
     }
-
     public void renderHoldPiece() {
         if (holdPiece.getTetromino() != null) {
             for (int i = 0; i < holdPiece.getTetromino().getShape().length; i++) {
@@ -282,7 +282,7 @@ public class GameScreen implements Screen, Soundable {
                     Config.ColorEnum blockColor = holdPiece.getTetromino().getShape()[i][j].getColorEnum();
                     TextureRegion blockTexture = colorToTextureMap.get(blockColor);
                     if (holdPiece.getTetromino().getShape()[i][j].isSolid() && blockTexture != null) {
-                        tetrisGame.batch.draw(blockTexture, 180 + (j * 40), 500 + (i * 40), 40, 40);
+                        tetrisGame.batch.draw(blockTexture, 225 + (j * 40), 535 + (i * 40), 40, 40);
                     }
                 }
             }
@@ -312,6 +312,35 @@ public class GameScreen implements Screen, Soundable {
                 Color color = blockColor.getColor();
                 PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, 400 + (j*40) + 20, (i*40) + 20);
                 lights.add(pointLight);
+            }
+        }
+        if (holdPiece.getTetromino() != null) {
+            for (int i = 0; i < holdPiece.getTetromino().getShape().length; i++) {
+                for (int j = 0; j < holdPiece.getTetromino().getShape()[i].length; j++) {
+                    if (holdPiece.getTetromino().getShape()[i][j].isSolid()) {
+                        Config.ColorEnum blockColor = holdPiece.getTetromino().getShape()[i][j].getColorEnum();
+                        Color color = blockColor.getColor();
+                        float x = 225 + (j * 40) + 20;
+                        float y = 535 + (i * 40) + 20;
+                        PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, x, y);
+                        lights.add(pointLight);
+                    }
+                }
+            }
+        }
+        ArrayList<Config.Tetrominoes> currentQueue = queue.getQueue();
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < currentQueue.get(i).getType().getShape().length; j++) {
+                for (int k = 0; k < currentQueue.get(i).getType().getShape()[j].length; k++) {
+                    if (currentQueue.get(i).getType().getShape()[j][k].isSolid()) {
+                        Config.ColorEnum blockColor = currentQueue.get(i).getType().getShape()[j][k].getColorEnum();
+                        Color color = blockColor.getColor();
+                        float x = 415 + 440 + (k * 40) + 20;
+                        float y = 120 * (5 - i) + (j * 40) - 80 + 20 + 35;
+                        PointLight pointLight = new PointLight(tetrisGame.getRayHandler(), 100, color, 55, x, y);
+                        lights.add(pointLight);
+                    }
+                }
             }
         }
         tetrisGame.getRayHandler().setCombinedMatrix(camera);
@@ -349,10 +378,10 @@ public class GameScreen implements Screen, Soundable {
         // Hold Border
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(238/255f, 225/255f, 0, 1);
-        shapeRenderer.rect(125, 465, 230, 15); // Top border
-        shapeRenderer.rect(125, 465, 15, 230); // Left border
-        shapeRenderer.rect(125, 680, 230, 15); // Bottom border
-        shapeRenderer.rect(340, 465, 15, 230); // Right border
+        shapeRenderer.rect(170, 505, 230, 15); // Top border
+        shapeRenderer.rect(170, 505, 15, 230); // Left border
+        shapeRenderer.rect(170, 720, 230, 15); // Bottom border
+        shapeRenderer.rect(385, 505, 15, 230); // Right border
         shapeRenderer.end();
 
         // Playfield Border
@@ -367,10 +396,10 @@ public class GameScreen implements Screen, Soundable {
         // Queue Border
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(238/255f, 225/255f, 0, 1);
-        shapeRenderer.rect(845, 25, 230, 15); // Top border
-        shapeRenderer.rect(845, 25, 15, 670); // Left border
-        shapeRenderer.rect(845, 670 + 25, 230, 15); // Bottom border
-        shapeRenderer.rect(845 + 230 - 15, 25, 15, 670 + 15); // Right border
+        shapeRenderer.rect(800, 65, 230, 15); // Top border
+        shapeRenderer.rect(800, 65, 15, 670); // Left border
+        shapeRenderer.rect(800, 695 + 25, 230, 15); // Bottom border
+        shapeRenderer.rect(800 + 230 - 15, 65, 15, 670); // Right border
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
