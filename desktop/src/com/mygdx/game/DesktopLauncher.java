@@ -16,7 +16,7 @@ public class DesktopLauncher implements WindowManager{
 
 	private void launchGame() {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setTitle("Tetris!");
+		config.setTitle("GEMBLOX");
 		config.setWindowedMode(1200, 800);
 		config.useVsync(true);
 		config.setForegroundFPS(60);

@@ -56,6 +56,7 @@ public class MenuScreen implements Screen, Soundable {
         tetrisGame.batch.end();
 
         if (Gdx.input.isTouched()) {
+            playSound("gameStart", "wav");
             tetrisGame.setScreen(new GameScreen(tetrisGame));
             dispose();
         }

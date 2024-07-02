@@ -1,7 +1,6 @@
 package com.mygdx.game;
 
 import box2dLight.PointLight;
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -39,6 +38,7 @@ public class GameScreen implements Screen, Soundable {
     TextureRegion blueBlock;
     TextureRegion magentaBlock;
     TextureRegion placementBlock;
+    TextureRegion whiteBlock;
     Music backgroundMusic;
     Board board;
     Queue queue;
@@ -50,6 +50,8 @@ public class GameScreen implements Screen, Soundable {
     OrthographicCamera camera;
     BitmapFont font;
     GlyphLayout layout;
+    Texture holdInside;
+    Texture queueInside;
 
     private float AutoDropDelayTimer = 0;
 
@@ -65,6 +67,8 @@ public class GameScreen implements Screen, Soundable {
 
         // Load textures
         tetrominoTextures = new Texture(Gdx.files.internal("img/texture.png"));
+        holdInside = new Texture(Gdx.files.internal("img/holdInside.png"));
+        queueInside = new Texture(Gdx.files.internal("img/queueInside.png"));
         redBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
         orangeBlock = new TextureRegion(tetrominoTextures, 192, 0, 192, 192);
         yellowBlock = new TextureRegion(tetrominoTextures, 384, 0, 192, 192);
@@ -73,6 +77,7 @@ public class GameScreen implements Screen, Soundable {
         blueBlock = new TextureRegion(tetrominoTextures, 0, 192, 192, 192);
         magentaBlock = new TextureRegion(tetrominoTextures, 192, 192, 192, 192);
         placementBlock = new TextureRegion(tetrominoTextures, 768, 192, 192, 192);
+        whiteBlock = new TextureRegion (tetrominoTextures, 576, 192, 192, 192);
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/TetrisAlt.wav"));
         colorToTextureMap = new HashMap<>();
         colorToTextureMap.put(Config.ColorEnum.RED, redBlock);
@@ -172,21 +177,16 @@ public class GameScreen implements Screen, Soundable {
         tetrisGame.batch.setProjectionMatrix(camera.combined);
 
         shapeRenderer.setProjectionMatrix(camera.combined);
+
+        renderBackground();
         renderGrid();
-
-        borderHold();
-        borderPlayfield();
-        borderQueue();
-
-//        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Render start
-//        shapeRenderer.setColor(0, 0, 0.2f, 1);
-//        shapeRenderer.rect(400 + 400, 0, 200, 800);
-//        shapeRenderer.end(); // Render end
 
         tetrisGame.batch.begin(); // Render batch start
         renderPlayField(); // Render play field
         renderCurrentPiece(); // Render current piece
         renderPlacementOutlinePiece(); // Render placement outline piece
+        tetrisGame.batch.draw(holdInside, 140, 480);
+        tetrisGame.batch.draw(queueInside, 860, 40);
         renderQueue(); // Render Queue
         renderHoldPiece(); // Render Hold Piece
         font.getData().setScale(2);
@@ -222,7 +222,7 @@ public class GameScreen implements Screen, Soundable {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(new Color(1, 1, 1, 0.25f));
+        shapeRenderer.setColor(new Color(1, 1, 1, 0.05f));
 
         // x 400 y 800
         for (int x = 0; x <= Config.BOARD_WIDTH * 40; x += 40) {
@@ -249,6 +249,7 @@ public class GameScreen implements Screen, Soundable {
     }
 
     public void renderPlacementOutlinePiece() {
+        tetrisGame.batch.setColor(1, 1, 1, 0.5f);
         for (int i = 0; i < currentPiece.getTetromino().getShape().length; i++) {
             for (int j = 0; j < currentPiece.getTetromino().getShape()[i].length; j++) {
                 if (currentPiece.getTetromino().getShape()[i][j].isSolid()) {
@@ -256,6 +257,7 @@ public class GameScreen implements Screen, Soundable {
                 }
             }
         }
+        tetrisGame.batch.setColor(1, 1, 1, 1);
     }
 
     public void renderQueue() {
@@ -317,25 +319,61 @@ public class GameScreen implements Screen, Soundable {
         // Render Box2DLights end
     }
 
-    public void borderHold() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(140, 480, 200, 200);
+    public void renderBackground() {
+        // Enable blending for gradient rendering
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        // Set up the gradient colors
+        Color topColor = new Color(0, 0, 0, 1); // #000000
+        Color bottomColor = new Color(12/255f, 66/255f, 107/255f, 1); // #2C2C2C
+        Color bottomColorB = new Color(0, 8/255f, 39/255f, 1);
+
+        // Set up the ShapeRenderer for gradient rendering
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.rect(0, 0, 400, 800, bottomColor, bottomColor, topColor, topColor);
+        shapeRenderer.rect(800, 0, 400, 800, bottomColor, bottomColor, topColor, topColor);
+        shapeRenderer.rect(400, 0, 400, 800, bottomColorB, bottomColorB, topColor, topColor);
         shapeRenderer.end();
+
+        // Disable blending
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        // Draw borders after the gradient
+        renderBorders();
     }
 
-    public void borderPlayfield() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(400, 0, Config.BOARD_WIDTH * 40, Config.BOARD_HEIGHT * 40);
-        shapeRenderer.end();
-    }
+    public void renderBorders() {
+        Gdx.gl.glEnable(GL20.GL_SCISSOR_TEST);
 
-    public void borderQueue() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(860, 40, 200, 640);
+        // Hold Border
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(238/255f, 225/255f, 0, 1);
+        shapeRenderer.rect(125, 465, 230, 15); // Top border
+        shapeRenderer.rect(125, 465, 15, 230); // Left border
+        shapeRenderer.rect(125, 680, 230, 15); // Bottom border
+        shapeRenderer.rect(340, 465, 15, 230); // Right border
         shapeRenderer.end();
+
+        // Playfield Border
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(238/255f, 225/255f, 0, 1);
+        shapeRenderer.rect(385, -15, (Config.BOARD_WIDTH * 40) + 30, 15); // Top border
+        shapeRenderer.rect(385, -15, 15, (Config.BOARD_HEIGHT * 40) + 30); // Left border
+        shapeRenderer.rect(385, Config.BOARD_HEIGHT * 40 + 15, (Config.BOARD_WIDTH * 40) + 30, 15); // Bottom border
+        shapeRenderer.rect(385 + (Config.BOARD_WIDTH * 40) + 15, -15, 15, (Config.BOARD_HEIGHT * 40) + 30); // Right border
+        shapeRenderer.end();
+
+        // Queue Border
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(238/255f, 225/255f, 0, 1);
+        shapeRenderer.rect(845, 25, 230, 15); // Top border
+        shapeRenderer.rect(845, 25, 15, 670); // Left border
+        shapeRenderer.rect(845, 670 + 25, 230, 15); // Bottom border
+        shapeRenderer.rect(845 + 230 - 15, 25, 15, 670 + 15); // Right border
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
     }
 
     @Override
