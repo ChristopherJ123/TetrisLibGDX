@@ -4,10 +4,7 @@ import box2dLight.PointLight;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -55,6 +52,9 @@ public class GameScreen implements Screen, Soundable {
     Texture queueInside;
     Texture queueSign;
     Texture scoreSign;
+    Texture blackTexture;
+    Texture gameOverText;
+    Texture retryButton;
 
     private float AutoDropDelayTimer = 0;
     private boolean isGameover = false;
@@ -73,6 +73,8 @@ public class GameScreen implements Screen, Soundable {
         tetrominoTextures = new Texture(Gdx.files.internal("img/texture.png"));
         holdInside = new Texture(Gdx.files.internal("img/holdInside.png"));
         queueInside = new Texture(Gdx.files.internal("img/queueInside.png"));
+        gameOverText = new Texture(Gdx.files.internal("img/gameOverText.png"));
+        retryButton = new Texture(Gdx.files.internal("img/retryButton.png"));
         redBlock = new TextureRegion(tetrominoTextures, 0, 0, 192, 192);
         orangeBlock = new TextureRegion(tetrominoTextures, 192, 0, 192, 192);
         yellowBlock = new TextureRegion(tetrominoTextures, 384, 0, 192, 192);
@@ -104,6 +106,12 @@ public class GameScreen implements Screen, Soundable {
         currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
         holdPiece = new HoldPiece();
         score = new Score();
+        blackTexture = new Texture(1, 1, Pixmap.Format.RGBA8888);
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0.75f); // Black with 50% opacity
+        pixmap.fill();
+        blackTexture.draw(pixmap, 0, 0);
+        pixmap.dispose();
 
         // Music
         backgroundMusic.setLooping(true);
@@ -128,7 +136,10 @@ public class GameScreen implements Screen, Soundable {
             board.placeCurrentPiece(currentPiece);
             score.clearLineIfAny(board);
             currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
-            if (currentPiece.hitObstacle(board)) isGameover = true;
+            if (currentPiece.hitObstacle(board)) {
+                isGameover = true;
+                playSound("gameOverSound", "wav");
+            }
             holdPiece.setRecentlyUsedHold(false);
         };
         Runnable rotateLeftAction = () -> currentPiece.rotateLeft(board);
@@ -176,7 +187,10 @@ public class GameScreen implements Screen, Soundable {
                 board.placeCurrentPiece(currentPiece);
                 score.clearLineIfAny(board);
                 currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
-                if (currentPiece.hitObstacle(board)) isGameover = true;
+                if (currentPiece.hitObstacle(board)) {
+                    isGameover = true;
+                    playSound("gameOverSound", "wav");
+                }
 
                 holdPiece.setRecentlyUsedHold(false);
             }
@@ -211,8 +225,21 @@ public class GameScreen implements Screen, Soundable {
 
         renderBox2DLights(); // Render Box2DLights
 
+        boolean gameOverPlayed = false;
+
         if (isGameover) {
-            System.out.println("Gameover");
+            pause();
+            tetrisGame.batch.begin();
+            tetrisGame.batch.draw(blackTexture, 0, 0, 1200, 800);
+            tetrisGame.batch.draw(gameOverText, 440, 400, 320, 320);
+            tetrisGame.batch.draw(retryButton, 560, 200, 80, 80);
+            AutoDropDelayTimer = 0;
+            tetrisGame.batch.end();
+
+            if (Gdx.input.isTouched()) {
+                playSound("gameStart", "wav");
+                dispose();
+            }
         }
     }
 
@@ -443,5 +470,10 @@ public class GameScreen implements Screen, Soundable {
         }
         lights.clear();
         tetrisGame.getRayHandler().dispose();
+        blackTexture.dispose();
+        holdInside.dispose();
+        queueInside.dispose();
+        gameOverText.dispose();
+        retryButton.dispose();
     }
 }
