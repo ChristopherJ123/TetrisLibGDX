@@ -57,6 +57,7 @@ public class GameScreen implements Screen, Soundable {
     Texture scoreSign;
 
     private float AutoDropDelayTimer = 0;
+    private boolean isGameover = false;
 
     // Box2DLights stuff
     List<PointLight> lights;
@@ -127,6 +128,7 @@ public class GameScreen implements Screen, Soundable {
             board.placeCurrentPiece(currentPiece);
             score.clearLineIfAny(board);
             currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+            if (currentPiece.hitObstacle(board)) isGameover = true;
             holdPiece.setRecentlyUsedHold(false);
         };
         Runnable rotateLeftAction = () -> currentPiece.rotateLeft(board);
@@ -174,6 +176,8 @@ public class GameScreen implements Screen, Soundable {
                 board.placeCurrentPiece(currentPiece);
                 score.clearLineIfAny(board);
                 currentPiece = new CurrentPiece(queue.nextQueue(), Config.BOARD_WIDTH / 2, Config.BOARD_HEIGHT - 3);
+                if (currentPiece.hitObstacle(board)) isGameover = true;
+
                 holdPiece.setRecentlyUsedHold(false);
             }
             AutoDropDelayTimer = 0;
@@ -206,6 +210,10 @@ public class GameScreen implements Screen, Soundable {
         tetrisGame.batch.end(); // Render batch end
 
         renderBox2DLights(); // Render Box2DLights
+
+        if (isGameover) {
+            System.out.println("Gameover");
+        }
     }
 
     public void renderPlayField() {
