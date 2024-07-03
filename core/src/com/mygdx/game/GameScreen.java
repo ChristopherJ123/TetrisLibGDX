@@ -169,7 +169,7 @@ public class GameScreen implements Screen, Soundable {
 
         AutoDropDelayTimer += delta; // Timer for automatic drop
         // Automatic Drop delay
-        if (AutoDropDelayTimer >= Config.AUTO_DROP_DELAY) {
+        if (AutoDropDelayTimer >= Config.AUTO_DROP_DELAY - (float) score.getScore() /(5000+score.getScore())) {
             if (!currentPiece.moveDown(board)) {
                 board.placeCurrentPiece(currentPiece);
                 score.clearLineIfAny(board);
