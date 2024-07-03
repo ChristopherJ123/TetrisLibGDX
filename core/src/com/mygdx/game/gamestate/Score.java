@@ -70,7 +70,7 @@ public class Score implements Soundable {
 
         if (lineClearCount > 0) {
             if (lineClearCount == 4) {
-                playSound("4Rows", "wav");
+                playSound("crush", "wav");
             } else {
                 switch (getCombo()) {
                     case 0: playSound("combo1", "wav"); setCombo(1); break;
