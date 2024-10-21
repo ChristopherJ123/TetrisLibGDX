@@ -1,6 +1,6 @@
 package com.mygdx.game.tetromino.tetrominoes;
 
-import com.mygdx.game.config.Config;
+import com.mygdx.game.config.GameConstants;
 import com.mygdx.game.tetromino.Tetromino;
 import com.mygdx.game.tetromino.WallKickData;
 
@@ -14,7 +14,7 @@ public class JTetromino {
     WallKickData wallKickData;
 
     public JTetromino() {
-        tetromino = new Tetromino("JTetromino", Config.ColorEnum.BLUE);
+        tetromino = new Tetromino("JTetromino", GameConstants.ColorEnum.BLUE);
         tetromino.setShapeBoolean(shape);
         wallKickData = new WallKickData();
         wallKickData.JLSTZWallKickData();

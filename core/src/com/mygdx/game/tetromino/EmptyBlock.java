@@ -1,10 +1,10 @@
 package com.mygdx.game.tetromino;
 
-import com.mygdx.game.config.Config;
+import com.mygdx.game.config.GameConstants;
 
 public class EmptyBlock extends Block {
     public EmptyBlock() {
         super();
-        setColor(Config.ColorEnum.BLACK);
+        setColor(GameConstants.ColorEnum.BLACK);
     }
 }

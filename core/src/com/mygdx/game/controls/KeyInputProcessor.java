@@ -3,13 +3,16 @@ package com.mygdx.game.controls;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.mygdx.game.config.Config;
+import com.badlogic.gdx.Preferences;
+import com.mygdx.game.GameScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class KeyInputProcessor extends InputAdapter implements Soundable {
+    private final GameScreen gameScreen;
+    private final Preferences preferences;
     private float DASDelayTimer = 0;
     private float ARRDelayTimer = 0;
     private Runnable leftAction;
@@ -22,11 +25,12 @@ public class KeyInputProcessor extends InputAdapter implements Soundable {
     private Runnable holdAction;
     private Runnable exitAction;
 
-    private final List<Integer> movementKeysPressed;
+    private final List<Integer> movementKeysPressed = new ArrayList<>();
     private final List<Integer> movementKeys = Arrays.asList(20, 21, 22, 40, 146, 148, 150);
 
-    public KeyInputProcessor() {
-        movementKeysPressed = new ArrayList<>();
+    public KeyInputProcessor(GameScreen gameScreen) {
+        this.gameScreen = gameScreen;
+        preferences = Gdx.app.getPreferences("game-config");
     }
 
     @Override
@@ -49,7 +53,10 @@ public class KeyInputProcessor extends InputAdapter implements Soundable {
 
     @Override
     public boolean keyUp(int keycode) {
-        if (movementKeys.contains(keycode)) movementKeysPressed.remove(Integer.valueOf(keycode));
+        if (movementKeys.contains(keycode)) {
+            movementKeysPressed.remove(Integer.valueOf(keycode));
+            if (keycode == Input.Keys.DOWN || keycode == Input.Keys.NUMPAD_2) gameScreen.sdfMultiplier = 1;
+        }
         if (movementKeysPressed.isEmpty()) DASDelayTimer = 0;
         return true;
     }
@@ -58,12 +65,23 @@ public class KeyInputProcessor extends InputAdapter implements Soundable {
         // Repeating movements here
         DASDelayTimer += delta;
         ARRDelayTimer += delta;
-        if (DASDelayTimer >= Config.DAS && ARRDelayTimer >= Config.ARR) {
+        if (DASDelayTimer >= preferences.getFloat("das_value") && ARRDelayTimer >= preferences.getFloat("arr_value")) {
             if (!movementKeysPressed.isEmpty()) {
                 switch (movementKeysPressed.get(movementKeysPressed.size()-1)) {
-                    case Input.Keys.LEFT, Input.Keys.NUMPAD_4 -> leftAction.run();
-                    case Input.Keys.RIGHT, Input.Keys.NUMPAD_6 -> rightAction.run();
-                    case Input.Keys.DOWN, Input.Keys.NUMPAD_2 -> downAction.run();
+                    case Input.Keys.LEFT, Input.Keys.NUMPAD_4 -> {
+                        if (preferences.getFloat("arr_value") == 0) {
+                            while (!gameScreen.currentPiece.hitObstacle(-1, 0)) leftAction.run();
+                        } else {
+                            leftAction.run();
+                        }
+                    }
+                    case Input.Keys.RIGHT, Input.Keys.NUMPAD_6 -> {
+                        if (preferences.getFloat("arr_value") == 0) {
+                            while (!gameScreen.currentPiece.hitObstacle(1, 0)) rightAction.run();
+                        } else {
+                            rightAction.run();
+                        }
+                    }
                 }
             }
             ARRDelayTimer = 0; // Reset the timer after action

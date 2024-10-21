@@ -4,13 +4,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.mygdx.game.tetromino.Tetromino;
 import com.mygdx.game.tetromino.tetrominoes.*;
 
-public class Config {
+public class GameConstants {
     public static final int BOARD_BUFFER_ZONE = 20;
     public static final int BOARD_HEIGHT = 20; // Maksimum height jumlah balok
     public static final int BOARD_WIDTH = 10; // Maksimum width jumlah balok
-    public static final float DAS = 0.4f; // Initial movement delay
-    public static final float ARR = 0.05f; // Initial repeat delay
-    public static final float AUTO_DROP_DELAY = 1f; // Automatic Drop delay
+    public static float DAS = 0.4f; // Initial movement delay
+    public static float ARR = 0.1f; // Initial repeat delay
+    public static float SDF = 5f; // Soft Drop Factor
+    public static final float AUTOMATIC_DROP_DELAY = 1f;
 
     public enum Tetrominoes {
         ITETROMINO(ITetromino.get()),

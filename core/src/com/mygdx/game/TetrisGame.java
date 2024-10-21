@@ -16,7 +16,7 @@ public class TetrisGame extends Game {
 	public BitmapFont font;
 
 	// Box2DLights Here
-	World world;
+	private World world;
 	private RayHandler rayHandler;
 	private OrthographicCamera camera;
 
@@ -45,7 +45,7 @@ public class TetrisGame extends Game {
 		rayHandler.setAmbientLight(1f);
 
 		// Set initial screen
-		this.setScreen(new MenuScreen(this));
+		this.setScreen(new OptionScreen(this));
 	}
 
 	public void render() {

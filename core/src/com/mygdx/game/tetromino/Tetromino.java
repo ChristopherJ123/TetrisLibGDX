@@ -1,30 +1,30 @@
 package com.mygdx.game.tetromino;
 
-import com.mygdx.game.config.Config;
+import com.mygdx.game.config.GameConstants;
 
 import java.util.Arrays;
 
 public class Tetromino {
     private String name;
-    private Config.ColorEnum color;
+    private GameConstants.ColorEnum color;
     private Block[][] shape;
     private WallKickData wallKickData;
 
-    public Tetromino(String name, Config.ColorEnum color) {
+    public Tetromino(String name, GameConstants.ColorEnum color) {
         this.name = name;
         this.color = color;
         this.shape = new Block[][]{{new Block()}};
         this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Config.ColorEnum color, Block[][] shape) {
+    public Tetromino(String name, GameConstants.ColorEnum color, Block[][] shape) {
         this.name = name;
         this.color = color;
         this.shape = shape;
         this.wallKickData = new WallKickData();
     }
 
-    public Tetromino(String name, Config.ColorEnum color, Block[][] shape, WallKickData wallKickData) {
+    public Tetromino(String name, GameConstants.ColorEnum color, Block[][] shape, WallKickData wallKickData) {
         this.name = name;
         this.color = color;
         this.shape = shape;
@@ -49,16 +49,22 @@ public class Tetromino {
         this.name = name;
     }
 
-    public Config.ColorEnum getColor() {
+    public GameConstants.ColorEnum getColor() {
         return color;
     }
 
-    public void setColor(Config.ColorEnum color) {
+    public void setColor(GameConstants.ColorEnum color) {
         this.color = color;
     }
 
     public Block[][] getShape() {
-        return shape;
+        Block[][] newShape = new Block[shape.length][shape[0].length];
+        for (int i = 0; i < shape.length; i++) {
+            for (int j = 0; j < shape[i].length; j++) {
+                newShape[i][j] = new Block(shape[i][j].getColorEnum(), shape[i][j].isSolid(), shape[i][j].isPlaced());
+            }
+        }
+        return newShape;
     }
 
     public void setShape(Block[][] shape) {

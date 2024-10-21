@@ -1,6 +1,6 @@
 package com.mygdx.game.gamestate;
 
-import com.mygdx.game.config.Config.Tetrominoes;
+import com.mygdx.game.config.GameConstants.Tetrominoes;
 import com.mygdx.game.tetromino.Tetromino;
 
 import java.util.ArrayList;
