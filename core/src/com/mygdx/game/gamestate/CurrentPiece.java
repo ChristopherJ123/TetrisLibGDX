@@ -1,9 +1,10 @@
 package com.mygdx.game.gamestate;
 
 import com.mygdx.game.controls.Moveable;
-import com.mygdx.game.controls.Soundable;
+import com.mygdx.game.interfaces.Soundable;
 import com.mygdx.game.tetromino.Block;
 import com.mygdx.game.tetromino.Tetromino;
+import com.mygdx.game.tetromino.tetrominoes.*;
 
 import java.util.ArrayList;
 
@@ -26,7 +27,7 @@ public class CurrentPiece implements Moveable, Soundable {
 
     public CurrentPiece(CurrentPiece currentPiece) {
         this.board = currentPiece.board;
-        this.tetromino = new Tetromino(currentPiece.getTetromino());
+        this.tetromino = currentPiece.getTetromino();
         this.currentShape = currentPiece.currentShape;
         this.x = currentPiece.getX();
         this.y = currentPiece.getY();
@@ -45,7 +46,6 @@ public class CurrentPiece implements Moveable, Soundable {
     }
 
     public boolean rotateBy(int r) {
-        playSound("switch", "wav");
         CurrentPiece currentPieceTemp = new CurrentPiece(this);
         int width = currentShape.length;
         int height = currentShape[0].length;
@@ -87,27 +87,27 @@ public class CurrentPiece implements Moveable, Soundable {
             }
         }
         currentPieceTemp.currentShape = temp;
-        switch (rotation) { // Get wall kick data
+        switch (this.rotation) { // Get wall kick data
             case 0 -> {
                 if (r == 1) {
-                    ArrayList<Integer[]> ZeroToR = tetromino.getWallKickData().getZeroToR();
-                    for (Integer[] wallKickDir : ZeroToR) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation++;
+                    ArrayList<Object[]> ZeroToR = tetromino.getWallKickData().getZeroToR();
+                    for (Object[] wallKickDir : ZeroToR) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation++;
                             return true;
                         }
                     }
                 } else if (r == 3) {
-                    ArrayList<Integer[]> ZeroToL = tetromino.getWallKickData().getZeroToL();
-                    for (Integer[] wallKickDir : ZeroToL) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation = 3;
+                    ArrayList<Object[]> ZeroToL = tetromino.getWallKickData().getZeroToL();
+                    for (Object[] wallKickDir : ZeroToL) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation = 3;
                             return true;
                         }
                     }
@@ -115,24 +115,24 @@ public class CurrentPiece implements Moveable, Soundable {
             }
             case 1 -> {
                 if (r == 1) {
-                    ArrayList<Integer[]> RToTwo = tetromino.getWallKickData().getRToTwo();
-                    for (Integer[] wallKickDir : RToTwo) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation++;
+                    ArrayList<Object[]> RToTwo = tetromino.getWallKickData().getRToTwo();
+                    for (Object[] wallKickDir : RToTwo) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation++;
                             return true;
                         }
                     }
                 } else if (r == 3) {
-                    ArrayList<Integer[]> RToZero = tetromino.getWallKickData().getRToZero();
-                    for (Integer[] wallKickDir : RToZero) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation--;
+                    ArrayList<Object[]> RToZero = tetromino.getWallKickData().getRToZero();
+                    for (Object[] wallKickDir : RToZero) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation--;
                             return true;
                         }
                     }
@@ -140,24 +140,24 @@ public class CurrentPiece implements Moveable, Soundable {
             }
             case 2 -> {
                 if (r == 1) {
-                    ArrayList<Integer[]> TwoToL = tetromino.getWallKickData().getTwoToL();
-                    for (Integer[] wallKickDir : TwoToL) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation++;
+                    ArrayList<Object[]> TwoToL = tetromino.getWallKickData().getTwoToL();
+                    for (Object[] wallKickDir : TwoToL) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation++;
                             return true;
                         }
                     }
                 } else if (r == 3) {
-                    ArrayList<Integer[]> TwoToR = tetromino.getWallKickData().getTwoToR();
-                    for (Integer[] wallKickDir : TwoToR) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation--;
+                    ArrayList<Object[]> TwoToR = tetromino.getWallKickData().getTwoToR();
+                    for (Object[] wallKickDir : TwoToR) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation--;
                             return true;
                         }
                     }
@@ -165,24 +165,24 @@ public class CurrentPiece implements Moveable, Soundable {
             }
             case 3 -> {
                 if (r == 1) {
-                    ArrayList<Integer[]> LToZero = tetromino.getWallKickData().getLToZero();
-                    for (Integer[] wallKickDir : LToZero) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation = 0;
+                    ArrayList<Object[]> LToZero = tetromino.getWallKickData().getLToZero();
+                    for (Object[] wallKickDir : LToZero) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation = 0;
                             return true;
                         }
                     }
                 } else if (r == 3) {
-                    ArrayList<Integer[]> LToTwo = tetromino.getWallKickData().getLToTwo();
-                    for (Integer[] wallKickDir : LToTwo) {
-                        if (!currentPieceTemp.hitObstacle(wallKickDir[0], wallKickDir[1])) {
-                            this.x += wallKickDir[0];
-                            this.y += wallKickDir[1];
-                            currentShape = currentPieceTemp.currentShape;
-                            rotation--;
+                    ArrayList<Object[]> LToTwo = tetromino.getWallKickData().getLToTwo();
+                    for (Object[] wallKickDir : LToTwo) {
+                        if (!currentPieceTemp.hitObstacle((int)wallKickDir[0], (int)wallKickDir[1])) {
+                            this.x += (int)wallKickDir[0];
+                            this.y += (int)wallKickDir[1];
+                            this.currentShape = currentPieceTemp.currentShape;
+                            this.rotation--;
                             return true;
                         }
                     }
@@ -253,7 +253,14 @@ public class CurrentPiece implements Moveable, Soundable {
     }
 
     public Tetromino getTetromino() {
-        return new Tetromino(this.tetromino);
+        if (this.tetromino instanceof ITetromino) return new ITetromino();
+        else if (this.tetromino instanceof JTetromino) return new JTetromino();
+        else if (this.tetromino instanceof LTetromino) return new LTetromino();
+        else if (this.tetromino instanceof OTetromino) return new OTetromino();
+        else if (this.tetromino instanceof STetromino) return new STetromino();
+        else if (this.tetromino instanceof TTetromino) return new TTetromino();
+        else if (this.tetromino instanceof ZTetromino) return new ZTetromino();
+        return null;
     }
 
     public Block[][] getCurrentShape() {
@@ -287,34 +294,49 @@ public class CurrentPiece implements Moveable, Soundable {
 
     @Override
     public boolean moveLeft() {
-        playSound("move", "wav");
+        playSound("move");
         return changeBy(-1, 0);
     }
 
     @Override
     public boolean moveRight() {
-        playSound("move", "wav");
+        playSound("move");
         return changeBy(1, 0);
     }
 
     @Override
     public boolean moveDown() {
-        playSound("move", "wav");
+        playSound("move");
         return changeBy(0, -1);
     }
 
     @Override
     public boolean rotateLeft() {
-        return rotateBy(-1);
+        if (rotateBy(-1)) {
+            if (this.tetromino.isSpinSpecial(this.board, this.x, this.y, this.rotation)) playSound("Tetrio/spin");
+            else playSound("Tetrio/rotate");
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean rotateRight() {
-        return rotateBy(1);
+        if (rotateBy(1)) {
+            if (this.tetromino.isSpinSpecial(this.board, this.x, this.y, this.rotation)) playSound("Tetrio/spin");
+            else playSound("Tetrio/rotate");
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean rotate180() {
-        return rotateBy(2);
+        if (rotateBy(2)) {
+            if (this.tetromino.isSpinSpecial(this.board, this.x, this.y, this.rotation)) playSound("Tetrio/spin");
+            else playSound("Tetrio/rotate");
+            return true;
+        }
+        return false;
     }
 }

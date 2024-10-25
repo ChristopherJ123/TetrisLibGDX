@@ -34,6 +34,8 @@ public class OptionScreen implements Screen {
     private final VisSlider SDFSlider;
     private final SimpleFloatSpinnerModel SDFModel;
 
+    private float elapsedTime = 0;
+
     public OptionScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
 
@@ -148,6 +150,8 @@ public class OptionScreen implements Screen {
         table.add(SDFValue);
         table.row();
         table.add(resetButton).colspan(2).width(200);
+        table.row();
+        table.add(new VisLabel("Press Space to play!")).colspan(2);
 
         stage.addActor(table);
 
@@ -167,16 +171,23 @@ public class OptionScreen implements Screen {
     }
 
     @Override
-    public void render(float v) {
+    public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
         // Render the stage for UI elements
-        stage.act(v);
+        stage.act(delta);
         stage.draw();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+        elapsedTime += delta;
+        if (elapsedTime > 0.2 && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             tetrisGame.setScreen(new MenuScreen(tetrisGame));
+            elapsedTime = 0;
+
+        }
+        if (elapsedTime > 0.2 && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            elapsedTime = 0;
             dispose();
+            System.exit(0);
         }
     }
 

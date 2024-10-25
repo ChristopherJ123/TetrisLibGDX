@@ -1,14 +1,16 @@
 package com.mygdx.game.tetromino;
 
 import com.mygdx.game.config.GameConstants;
+import com.mygdx.game.gamestate.Board;
 
 import java.util.Arrays;
 
-public class Tetromino {
+public abstract class Tetromino {
+    //todo make abstract
     private String name;
     private GameConstants.ColorEnum color;
     private Block[][] shape;
-    private WallKickData wallKickData;
+    protected WallKickData wallKickData;
 
     public Tetromino(String name, GameConstants.ColorEnum color) {
         this.name = name;
@@ -40,6 +42,8 @@ public class Tetromino {
         }
         this.wallKickData = tetromino.wallKickData;
     }
+
+    public abstract boolean isSpinSpecial(Board board, int locX, int locY, int rot);
 
     public String getName() {
         return name;

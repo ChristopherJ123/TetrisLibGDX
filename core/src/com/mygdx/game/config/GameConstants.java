@@ -14,13 +14,13 @@ public class GameConstants {
     public static final float AUTOMATIC_DROP_DELAY = 1f;
 
     public enum Tetrominoes {
-        ITETROMINO(ITetromino.get()),
-        JTETROMINO(JTetromino.get()),
-        LTETROMINO(LTetromino.get()),
-        OTETROMINO(OTetromino.get()),
-        STETROMINO(STetromino.get()),
-        TTETROMINO(TTetromino.get()),
-        ZTETROMINO(ZTetromino.get());
+        ITETROMINO(new ITetromino()),
+        JTETROMINO(new JTetromino()),
+        LTETROMINO(new LTetromino()),
+        OTETROMINO(new OTetromino()),
+        STETROMINO(new STetromino()),
+        TTETROMINO(new TTetromino()),
+        ZTETROMINO(new ZTetromino());
 
         private final Tetromino type;
 

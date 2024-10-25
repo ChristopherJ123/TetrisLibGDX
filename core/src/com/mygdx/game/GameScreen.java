@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.config.GameConstants;
 import com.mygdx.game.controls.KeyInputProcessor;
-import com.mygdx.game.controls.Soundable;
+import com.mygdx.game.interfaces.Soundable;
 import com.mygdx.game.gamestate.*;
 import com.mygdx.game.tetromino.Tetromino;
 
@@ -58,8 +58,11 @@ public class GameScreen implements Screen, Soundable {
     Texture gameOverText;
     Texture retryButton;
 
-    private float AutoDropDelayTimer = 0;
+    private float autoDropDelayTimer = 0;
+    private float autoPlaceDelayTimer = 0;
     public float sdfMultiplier = 1;
+
+    private boolean hasHitFloor = false;
     private boolean isGameover = false;
 
     // Box2DLights stuff
@@ -110,6 +113,7 @@ public class GameScreen implements Screen, Soundable {
         currentPiece = new CurrentPiece(board, queue.nextQueue(), GameConstants.BOARD_WIDTH / 2, GameConstants.BOARD_HEIGHT - 3);
         holdPiece = new HoldPiece();
         score = new Score();
+        board.registerObserver(score);
         blackTexture = new Texture(1, 1, Pixmap.Format.RGBA8888);
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(0, 0, 0, 0.75f); // Black with 50% opacity
@@ -132,30 +136,25 @@ public class GameScreen implements Screen, Soundable {
         lights = new ArrayList<>();
 
         // Initialize key actions
+        // todo cleanup controls using their own class
         Runnable leftAction = () -> {
             currentPiece.moveLeft();
+            this.autoPlaceDelayTimer = 0;
         };
         Runnable rightAction = () -> {
             currentPiece.moveRight();
+            this.autoPlaceDelayTimer = 0;
         };
         Runnable downAction = () -> {
             if (preferences.getFloat("sdf_value") == 50) {
                 while (!currentPiece.hitObstacle(0, -1)) currentPiece.moveDown();
+                //todo cleanup
+                this.hasHitFloor = true;
             } else {
                 sdfMultiplier = preferences.getFloat("sdf_value");
             }
         };
-        Runnable spaceAction = () -> {
-            while (currentPiece.changeBy(0, -1));
-            board.placeCurrentPiece(currentPiece);
-            score.clearLineIfAny(board);
-            currentPiece = new CurrentPiece(board, queue.nextQueue(), GameConstants.BOARD_WIDTH / 2, GameConstants.BOARD_HEIGHT - 3);
-            if (currentPiece.hitObstacle()) {
-                isGameover = true;
-                playSound("gameOverSound", "wav");
-            }
-            holdPiece.setRecentlyUsedHold(false);
-        };
+        Runnable spaceAction = this::placePiece;
         Runnable rotateLeftAction = () -> currentPiece.rotateLeft();
         Runnable rotateRightAction = () -> currentPiece.rotateRight();
         Runnable rotate180Action = () -> currentPiece.rotate180();
@@ -168,7 +167,12 @@ public class GameScreen implements Screen, Soundable {
                 playSound("hold", "wav");
             }
         };
-        Runnable exitAction = () -> System.exit(0);
+        Runnable exitAction = () -> {
+            Gdx.input.setInputProcessor(null);
+
+            tetrisGame.setScreen(new MenuScreen(tetrisGame));
+            dispose();
+        };
 
         keyInputProcessor = new KeyInputProcessor(this);
         keyInputProcessor.setLeftAction(leftAction);
@@ -183,6 +187,20 @@ public class GameScreen implements Screen, Soundable {
         Gdx.input.setInputProcessor(keyInputProcessor);
     }
 
+    private void placePiece() {
+        while (!currentPiece.hitObstacle(0, -1)) {
+            currentPiece.changeBy(0, -1);
+        }
+        board.placeCurrentPiece(currentPiece);
+        board.notifyObservers();
+        currentPiece = new CurrentPiece(board, queue.nextQueue(), GameConstants.BOARD_WIDTH / 2, GameConstants.BOARD_HEIGHT - 3);
+        if (currentPiece.hitObstacle()) {
+            isGameover = true;
+            playSound("gameOverSound", "wav");
+        }
+        holdPiece.setRecentlyUsedHold(false);
+    }
+
     @Override
     public void show() {
 
@@ -194,20 +212,22 @@ public class GameScreen implements Screen, Soundable {
 
         keyInputProcessor.update(delta); // Listen keyboard inputs
 
-        AutoDropDelayTimer += delta; // Timer for automatic drop
-        // Automatic Drop delay
-        if (AutoDropDelayTimer >= 1/((GameConstants.AUTOMATIC_DROP_DELAY + (float) score.getScore() / (5000+score.getScore())) * sdfMultiplier)) {
-            if (!currentPiece.moveDown()) {
-                board.placeCurrentPiece(currentPiece);
-                score.clearLineIfAny(board);
-                currentPiece = new CurrentPiece(board, queue.nextQueue(), GameConstants.BOARD_WIDTH / 2, GameConstants.BOARD_HEIGHT - 3);
-                if (currentPiece.hitObstacle()) {
-                    isGameover = true;
-                    playSound("gameOverSound", "wav");
-                }
-                holdPiece.setRecentlyUsedHold(false);
+        autoDropDelayTimer += delta; // Timer for automatic drop
+        autoPlaceDelayTimer += delta; // Timer for automatic place
+
+        // Automatic Drop
+        if (!currentPiece.hitObstacle(0, -1) && autoDropDelayTimer >= 1/((GameConstants.AUTOMATIC_DROP_DELAY + (float) score.getScore() / (5000+score.getScore())) * sdfMultiplier)) {
+            if (currentPiece.moveDown()) {
+                this.hasHitFloor = currentPiece.hitObstacle(0, -1);
             }
-            AutoDropDelayTimer = 0;
+            autoDropDelayTimer = 0;
+            autoPlaceDelayTimer = 0;
+        }
+        // Automatic Place
+        if (this.hasHitFloor && autoPlaceDelayTimer >= 2/((GameConstants.AUTOMATIC_DROP_DELAY + (float) score.getScore() / (5000+score.getScore())) * sdfMultiplier)) {
+            placePiece();
+            autoPlaceDelayTimer = 0;
+            this.hasHitFloor = false;
         }
 
         camera.update();
@@ -246,7 +266,7 @@ public class GameScreen implements Screen, Soundable {
             tetrisGame.batch.draw(blackTexture, 0, 0, 1200, 800);
             tetrisGame.batch.draw(gameOverText, 440, 400, 320, 320);
             tetrisGame.batch.draw(retryButton, 560, 200, 80, 80);
-            AutoDropDelayTimer = 0;
+            autoDropDelayTimer = 0;
             tetrisGame.batch.end();
 
             if (Gdx.input.isTouched()) {
@@ -477,16 +497,17 @@ public class GameScreen implements Screen, Soundable {
     public void dispose() {
         tetrominoTextures.dispose();
         shapeRenderer.dispose();
-        tetrisGame.getRayHandler().dispose();
+//        tetrisGame.getRayHandler().dispose();
         for (PointLight light : lights) {
             light.remove();
         }
         lights.clear();
-        tetrisGame.getRayHandler().dispose();
+//        tetrisGame.getRayHandler().dispose();
         blackTexture.dispose();
         holdInside.dispose();
         queueInside.dispose();
         gameOverText.dispose();
         retryButton.dispose();
+        backgroundMusic.dispose();
     }
 }

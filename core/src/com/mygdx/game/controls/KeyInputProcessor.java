@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
 import com.mygdx.game.GameScreen;
+import com.mygdx.game.interfaces.Soundable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

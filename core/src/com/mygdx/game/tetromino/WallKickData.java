@@ -3,14 +3,14 @@ package com.mygdx.game.tetromino;
 import java.util.ArrayList;
 
 public class WallKickData {
-    private final ArrayList<Integer[]> ZeroToR;
-    private final ArrayList<Integer[]> RToZero;
-    private final ArrayList<Integer[]> RToTwo;
-    private final ArrayList<Integer[]> TwoToR;
-    private final ArrayList<Integer[]> TwoToL;
-    private final ArrayList<Integer[]> LToTwo;
-    private final ArrayList<Integer[]> LToZero;
-    private final ArrayList<Integer[]> ZeroToL;
+    private final ArrayList<Object[]> ZeroToR;
+    private final ArrayList<Object[]> RToZero;
+    private final ArrayList<Object[]> RToTwo;
+    private final ArrayList<Object[]> TwoToR;
+    private final ArrayList<Object[]> TwoToL;
+    private final ArrayList<Object[]> LToTwo;
+    private final ArrayList<Object[]> LToZero;
+    private final ArrayList<Object[]> ZeroToL;
 
     public WallKickData() {
         ZeroToR = new ArrayList<>();
@@ -25,14 +25,14 @@ public class WallKickData {
 
     public boolean addWallKickData(String type, int x, int y) {
         switch (type) {
-            case "0->R" -> ZeroToR.add(new Integer[]{x, y});
-            case "R->0" -> RToZero.add(new Integer[]{x, y});
-            case "R->2" -> RToTwo.add(new Integer[]{x, y});
-            case "2->R" -> TwoToR.add(new Integer[]{x, y});
-            case "2->L" -> TwoToL.add(new Integer[]{x, y});
-            case "L->2" -> LToTwo.add(new Integer[]{x, y});
-            case "L->0" -> LToZero.add(new Integer[]{x, y});
-            case "0->L" -> ZeroToL.add(new Integer[]{x, y});
+            case "0->R" -> ZeroToR.add(new Object[]{x, y,});
+            case "R->0" -> RToZero.add(new Object[]{x, y});
+            case "R->2" -> RToTwo.add(new Object[]{x, y});
+            case "2->R" -> TwoToR.add(new Object[]{x, y});
+            case "2->L" -> TwoToL.add(new Object[]{x, y});
+            case "L->2" -> LToTwo.add(new Object[]{x, y});
+            case "L->0" -> LToZero.add(new Object[]{x, y});
+            case "0->L" -> ZeroToL.add(new Object[]{x, y});
             default -> {
                 return false;
             }
@@ -83,35 +83,35 @@ public class WallKickData {
         addWallKickData("0->L", 1, -2);
     }
 
-    public ArrayList<Integer[]> getZeroToR() {
+    public ArrayList<Object[]> getZeroToR() {
         return ZeroToR;
     }
 
-    public ArrayList<Integer[]> getRToZero() {
+    public ArrayList<Object[]> getRToZero() {
         return RToZero;
     }
 
-    public ArrayList<Integer[]> getRToTwo() {
+    public ArrayList<Object[]> getRToTwo() {
         return RToTwo;
     }
 
-    public ArrayList<Integer[]> getTwoToR() {
+    public ArrayList<Object[]> getTwoToR() {
         return TwoToR;
     }
 
-    public ArrayList<Integer[]> getTwoToL() {
+    public ArrayList<Object[]> getTwoToL() {
         return TwoToL;
     }
 
-    public ArrayList<Integer[]> getLToTwo() {
+    public ArrayList<Object[]> getLToTwo() {
         return LToTwo;
     }
 
-    public ArrayList<Integer[]> getLToZero() {
+    public ArrayList<Object[]> getLToZero() {
         return LToZero;
     }
 
-    public ArrayList<Integer[]> getZeroToL() {
+    public ArrayList<Object[]> getZeroToL() {
         return ZeroToL;
     }
 }

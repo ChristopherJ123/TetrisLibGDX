@@ -1,23 +1,21 @@
 package com.mygdx.game.tetromino.tetrominoes;
 
 import com.mygdx.game.config.GameConstants;
+import com.mygdx.game.gamestate.Board;
 import com.mygdx.game.tetromino.Tetromino;
 import com.mygdx.game.tetromino.WallKickData;
 
-public class ITetromino {
-    Tetromino tetromino;
-    boolean[][] shape = {
-            {false, false, false, false},
-            {true, true, true, true},
-            {false, false, false, false},
-            {false, false, false, false}
-    };
-    WallKickData wallKickData;
+public class ITetromino extends Tetromino{
 
     public ITetromino() {
-        tetromino = new Tetromino("JTetromino", GameConstants.ColorEnum.TEAL);
-        tetromino.setShapeBoolean(shape);
-        wallKickData = new WallKickData();
+        super("ITetromino", GameConstants.ColorEnum.TEAL);
+        boolean[][] shape = {
+                {false, false, false, false},
+                {true, true, true, true},
+                {false, false, false, false},
+                {false, false, false, false}
+        };
+        setShapeBoolean(shape);
 
         wallKickData.addWallKickData("0->R", 0, 0);
         wallKickData.addWallKickData("0->R", -2, 0);
@@ -59,12 +57,10 @@ public class ITetromino {
         wallKickData.addWallKickData("0->L", -1, 0);
         wallKickData.addWallKickData("0->L", -1, 2);
         wallKickData.addWallKickData("0->L", 2, -1);
-
-        tetromino.setWallKickData(wallKickData);
     }
 
-    public static Tetromino get() {
-        ITetromino iTetromino = new ITetromino();
-        return iTetromino.tetromino;
+    @Override
+    public boolean isSpinSpecial(Board board, int locX, int locY, int rot) {
+        return false;
     }
 }

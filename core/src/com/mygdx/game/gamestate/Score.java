@@ -1,10 +1,11 @@
 package com.mygdx.game.gamestate;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
-import com.mygdx.game.controls.Soundable;
+import com.mygdx.game.interfaces.Soundable;
+import com.mygdx.game.interfaces.observer.Observer;
+import com.mygdx.game.tetromino.Tetromino;
+import com.mygdx.game.tetromino.tetrominoes.TTetromino;
 
-public class Score implements Soundable {
+public class Score implements Observer, Soundable {
     private int level;
     private int score;
     private int combo;
@@ -15,28 +16,44 @@ public class Score implements Soundable {
     public Score() {
         this.level = 1;
         this.score = 0;
-        this.combo = 0;
-        this.b2b = 0;
-        this.b2bLineClear = 0;
+        this.combo = -1;
+        this.b2b = -1;
+        this.b2bLineClear = 0; //later
     }
 
     public void addScoreOfLines(int linesCount) {
         switch (linesCount) {
-            case 1 -> score += (100*level + combo*50);
-            case 2 -> score += (300*level + combo*50);
-            case 3 -> score += (500*level + combo*50);
-            case 4 -> score += (800*level + (combo*combo)*50 + (b2b * 200));
+            case 1 -> score += (100*level + (combo+1)*50);
+            case 2 -> score += (300*level + (combo+1)*50);
+            case 3 -> score += (500*level + (combo+1)*50);
+            case 4 -> score += (800*level + ((combo+1)*combo)*50 + ((b2b+1) * 200));
         }
+        b2b = linesCount==4? b2b + 1 : -1;
+
+        if (linesCount == 0) {
+            if (combo > 0) playSound("Tetrio/combobreak");
+        } else {
+            if (combo > 0 && combo <= 16) playSound("Tetrio/combo_" + combo);
+            else if (combo > 16) playSound("Tetrio/combo_16");
+        }
+
+        combo = linesCount!=0 ? combo + 1 : -1;
+
+        if (linesCount > 0 && linesCount < 4) playSound("Tetrio/clearline");
+        else if (linesCount == 4) playSound("Tetrio/clearquad");
     }
 
-    public void addScoreOfLines(int linesCount, boolean tSpin, boolean allClear) {
-        if (tSpin) {
+    public void addScoreOfLines(int linesCount, Tetromino tetromino, boolean spinSpecial, boolean allClear) {
+        if (tetromino instanceof TTetromino && spinSpecial) {
             switch (linesCount) {
-                case 1 -> score += (800*level + combo*50);
-                case 2 -> score += (1200*level + combo*50);
-                case 3 -> score += (1600*level + combo*50);
+                case 1 -> score += (800*level + combo*50) + ((b2b+1) * 200);
+                case 2 -> score += (1200*level + combo*50) + ((b2b+1) * 200);
+                case 3 -> score += (1600*level + combo*50) + ((b2b+1) * 200);
             }
-        }
+            b2b++;
+            if (b2b > 0) playSound("Tetrio/clearbtb");
+            else playSound("Tetrio/clearspin");
+        } else addScoreOfLines(linesCount);
         if (allClear) {
             switch (linesCount) {
                 case 1 -> score += (800*level + combo*50);
@@ -44,61 +61,12 @@ public class Score implements Soundable {
                 case 3 -> score += (1800*level + combo*50);
                 case 4 -> score += (2000*level + (combo*combo)*50 + (b2bLineClear * 3200));
             }
-        }
-    }
-
-    public boolean clearLineIfAny(Board board) {
-        int lineClearCount = 0;
-        for (int i = 0; i < board.playfield.length; i++) {
-            boolean lineClear = true;
-            for (int j = 0; j < board.playfield[i].length; j++) {
-                if (!board.playfield[i][j].isPlaced()) {
-                    lineClear = false;
-                    break;
-                }
-            }
-            if (lineClear) {
-                lineClearCount++;
-                for (int j = i; j < board.playfield.length - 1; j++) {
-                    for (int k = 0; k < board.playfield[j].length; k++) {
-                        board.playfield[j][k] = board.playfield[j+1][k];
-                    }
-                }
-                i--;
-            }
+            playSound("Tetrio/allclear");
         }
 
-        if (lineClearCount > 0) {
-            if (lineClearCount == 4) {
-                playSound("crush", "wav");
-            } else {
-                switch (getCombo()) {
-                    case 0: playSound("combo1", "wav"); setCombo(1); break;
-                    case 1: playSound("combo2", "wav"); setCombo(2); break;
-                    case 2: playSound("combo3", "wav"); setCombo(3); break;
-                    case 3: playSound("combo4", "wav"); setCombo(4); break;
-                    case 4: playSound("combo5", "wav"); setCombo(5); break;
-                    case 5: playSound("combo6", "wav"); setCombo(6); break;
-                    case 6: playSound("combo7", "wav"); setCombo(7); break;
-                    case 7: playSound("combo8", "wav"); setCombo(0); break;
-                    default: break;
-                }
-            }
-        }
-
-        addScoreOfLines(lineClearCount);
-        return lineClearCount != 0;
-    }
-
-    public boolean isAllClear(Board board) {
-        for (int i = 0; i < board.playfield.length; i++) {
-            for (int j = 0; j < board.playfield[i].length; j++) {
-                if (board.playfield[i][j].isPlaced()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        if (b2b == 2) playSound("Tetrio/btb_1");
+        else if (b2b == 5) playSound("Tetrio/btb_2");
+        else if (b2b >= 8 && b2b % 8 == 0) playSound("Tetrio/btb_3");
     }
 
     public void addScore(int score) {
@@ -139,5 +107,11 @@ public class Score implements Soundable {
 
     public void setB2bLineClear(int b2bLineClear) {
         this.b2bLineClear = b2bLineClear;
+    }
+
+    @Override
+    public void update(int lineCleared, Tetromino tetromino, boolean spinSpecial, boolean perfectClear) {
+        addScoreOfLines(lineCleared, tetromino, spinSpecial, perfectClear);
+        if (spinSpecial) System.out.println(tetromino.getName() + " spin!");
     }
 }

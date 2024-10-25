@@ -1,12 +1,12 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.mygdx.game.controls.Soundable;
+import com.mygdx.game.interfaces.Soundable;
 
 public class MenuScreen implements Screen, Soundable {
     final TetrisGame tetrisGame;
@@ -15,8 +15,10 @@ public class MenuScreen implements Screen, Soundable {
     Texture menu, menuB;
     Texture currentTexture;
     float switchInterval = 1.25f;
-    float elapsedTime = 0;
+    float timer = 0;
     boolean soundPlayed = false;
+
+    float elapsedTime = 0;
 
     public MenuScreen(TetrisGame tetrisGame) {
         this.tetrisGame = tetrisGame;
@@ -40,10 +42,12 @@ public class MenuScreen implements Screen, Soundable {
         camera.update();
         tetrisGame.batch.setProjectionMatrix(camera.combined);
 
+        timer += delta;
         elapsedTime += delta;
-        if (elapsedTime >= switchInterval) {
+
+        if (timer >= switchInterval) {
             currentTexture = (currentTexture == menu) ? menuB : menu;
-            elapsedTime = 0;
+            timer = 0;
             soundPlayed = false;
         }
 
@@ -55,8 +59,15 @@ public class MenuScreen implements Screen, Soundable {
         }
         tetrisGame.batch.end();
 
-        if (Gdx.input.isTouched()) {
+        if (elapsedTime > 0.2f && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            System.out.println("Menu exit");
+            elapsedTime = 0;
+            tetrisGame.setScreen(new OptionScreen(tetrisGame));
+        }
+        if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             playSound("gameStart", "wav");
+            Gdx.input.setInputProcessor(null);
+
             tetrisGame.setScreen(new GameScreen(tetrisGame));
             dispose();
         }
